@@ -5,12 +5,34 @@ from scipy.fft import rfft, rfftfreq
 from scipy.fft import irfft
 import streamlit as st
 import plotly.graph_objects as go
+import plotly_express as px
 
 SAMPLE_RATE = 44100  # Hertz
 DURATION = 5  # Seconds
 fig = go.Figure()
 
-# uploaded_file = st.file_uploader(label="Uploading Signal", type = ['csv',".wav"])
+uploaded_file = st.file_uploader(label="Uploading Signal", type = ['csv',".wav"])
+
+def fourier_plotting(x_axis_fourier,fft_out):
+    # Plotting audio Signal
+    figure, axis = plt.subplots()
+    plt.subplots_adjust(hspace=1)
+    axis.plot(x_axis_fourier,fft_out)
+    st.plotly_chart(figure,use_container_width=True)
+
+Fig = go.Figure()
+
+def plotting (x,y):
+  
+    fig = px.line(x=x,y=y, labels={'x': 'Time (seconds)', 'y': 'Amplitude'})
+
+    st.plotly_chart(fig, use_container_width=True)
+
+def one_argument_plotting (y):
+  
+    fig = px.line(y=y, labels={'x': 'Time (seconds)', 'y': 'Amplitude'})
+
+    st.plotly_chart(fig, use_container_width=True)
 
 def generate_sine_wave(freq, sample_rate, duration):
     x = np.linspace(0, duration, sample_rate * duration, endpoint=False)
@@ -26,6 +48,7 @@ def FT(signal,Fs,duration):
     mixed_tone = signal
     normalized_tone = np.int16((mixed_tone / mixed_tone.max()) * 32767)
 
+    one_argument_plotting(normalized_tone[:1000])
     plt.plot(normalized_tone[:1000])
     plt.show()
 
@@ -40,6 +63,7 @@ def FT(signal,Fs,duration):
     xf = rfftfreq(N, 1 / SAMPLE_RATE)
     print(xf)
 
+    fourier_plotting(xf,np.abs(yf))
     plt.plot(xf, np.abs(yf))
     plt.show()
 
@@ -50,13 +74,15 @@ def FT(signal,Fs,duration):
     target_idx = int(points_per_freq * 7500)
     target_idx_2 = int(points_per_freq * 16000)
     yf[target_idx - 1 : target_idx_2 + 2] = 0
-
+   
+    fourier_plotting(xf,np.abs(yf))
     plt.plot(xf, np.abs(yf))
     plt.show()
 
 
     new_sig = irfft(yf)
 
+    one_argument_plotting(new_sig[:1000])
     plt.plot(new_sig[:1000])
     plt.show()
 

@@ -64,7 +64,8 @@ def dataframe_creating_sliders(peaks_indeces,points_per_freq,fourier_x_axis,four
         # these three lines determine the range that will be modified by the slider
         target_idx   = int(points_per_freq * (peaks_indeces[index]-1)) 
         target_idx_2 = int(points_per_freq * (peaks_indeces[index]+1))
-        fourier_y_axis[target_idx - 1 : target_idx_2 + 2] *= slider_range
+        if slider_range is not None:
+            fourier_y_axis[target_idx - 1 : target_idx_2 + 2] *= slider_range
 
     return fourier_y_axis
 

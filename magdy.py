@@ -35,13 +35,11 @@ def dataframe_fourier_transform(dataframe):
     fourier_y_axis = rfft(signal_y_axis) # returns complex numbers of the y axis in the data frame
     fourier_x_axis = rfftfreq(len(signal_y_axis), (signal_x_axis[1]-signal_x_axis[0])) # returns the frequency x axis after fourier transform
 
-    # peaks = find_peaks(fourier_y_axis) # computes peaks of the signal 
-    # peaks_indeces = peaks[0] # indeces of frequency with high peaks
+
     frequencies = getPeaksFrequencies(signal_x_axis,signal_y_axis)
-    # st.write(frequencies.astype(int))
     points_per_freq = len(fourier_x_axis) / (sample_rate/2) #points per freq is the index of 1 HZ freq. 
     
-    fourier_y_axis = dataframe_creating_sliders(frequencies, points_per_freq, fourier_x_axis, fourier_y_axis) # calling creating sliders function
+    fourier_y_axis = dataframe_creating_sliders(frequencies, points_per_freq, fourier_y_axis) # calling creating sliders function
 
     modified_signal = irfft(fourier_y_axis) # returning the inverse transform after modifying it with sliders 
 
@@ -59,7 +57,7 @@ def dataframe_fourier_transform(dataframe):
     st.plotly_chart(fig2,use_container_width=True)
 
 #  ----------------------------------- CREATING SLIDERS ---------------------------------------------------------------
-def dataframe_creating_sliders(frequencies,points_per_freq,fourier_x_axis,fourier_y_axis):
+def dataframe_creating_sliders(frequencies,points_per_freq,fourier_y_axis):
 
     # peak_frequencies = fourier_x_axis[frequencies[:]]
     columns = st.columns(10)

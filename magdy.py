@@ -75,7 +75,7 @@ def dataframe_creating_sliders(frequencies,points_per_freq,fourier_y_axis):
 
     return fourier_y_axis
 
-def wave_static_sliders(fourier_y_axis):
+def wave_static_sliders(fourier_y_axis,pointsPerFrequency):
 
     # peak_frequencies = fourier_x_axis[peaks_indeces[:]]
     columns = st.columns(10)
@@ -83,14 +83,19 @@ def wave_static_sliders(fourier_y_axis):
 # [20,2000,4000,6000,8000,10000,12000,14000,16000,18000,20000]
 
     for i in range(10) :
+        minValue = (2000*i)
+        maxValue = (2000*(i+1))
         with columns[i]:
-            slider_range = svs.vertical_slider(min_value=0.0+(2000*i), max_value=0+(2000*(i+1)), default_value=(0+(2000*(i+1)))/2, step=10, key=i)
-
+            slider_range = svs.vertical_slider(min_value=0, max_value=10, default_value=1, step=1, key=i)
+            st.write(minValue)
+            st.write(maxValue)
+        
+        
         # these three lines determine the range that will be modified by the slider
-        target_idx   = int((frequencise[i]-1)) 
-        target_idx_2 = int( (frequencise[i]+1))
+        target_idx   = int(minValue*pointsPerFrequency) 
+        target_idx_2 = int( maxValue*pointsPerFrequency)
         if slider_range is not None:
-            fourier_y_axis[target_idx - 1 : target_idx_2 + 2] *= slider_range
+            fourier_y_axis[target_idx : target_idx_2 + 2] *= slider_range
 
     return fourier_y_axis
 
@@ -105,8 +110,10 @@ def fourier_for_audio(uploaded_file):
     x_axis_fourier = rfftfreq(len(amplitude),(1/sample_rate)) #3shan mbd2sh mn -ve
     plotting(x_axis_fourier,fft_out)
 
+    points_per_freq = len(x_axis_fourier) / (sample_rate/2) #points per freq is the index of 1 HZ freq. 
 
-    fourier_y_axis = wave_static_sliders( fft_out) # calling creating sliders function
+
+    fourier_y_axis = wave_static_sliders( fft_out,points_per_freq) # calling creating sliders function
 
     modified_signal = irfft(fourier_y_axis) # returning the inverse transform after modifying it with sliders 
 
@@ -118,9 +125,11 @@ def fourier_for_audio(uploaded_file):
 
     fig2, axs2 = plt.subplots()
     fig2.set_size_inches(14,5)
-    plt.plot(x_axis_fourier,modified_signal) # ploting signal after modifying
+    plt.plot(modified_signal) # ploting signal after modifying
     st.plotly_chart(fig2,use_container_width=True)
-
+    
+    write("audioTest.wav", sample_rate, modified_signal)
+    st.audio(modified_signal, format='audio/wav')
 
 #-------------------------------------- PLOTTING AUDIO ----------------------------------------------------
 def plotting(x_axis_fourier,fft_out):

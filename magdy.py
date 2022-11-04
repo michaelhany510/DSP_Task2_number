@@ -81,7 +81,7 @@ def wave_static_sliders(fourier_y_axis):
 
     # peak_frequencies = fourier_x_axis[peaks_indeces[:]]
     columns = st.columns(10)
-    frequencise = np.arange(20,21000,20)
+    frequencies = np.arange(20,21000,20)
 # [20,2000,4000,6000,8000,10000,12000,14000,16000,18000,20000]
 
     for i in range(10) :
@@ -89,8 +89,8 @@ def wave_static_sliders(fourier_y_axis):
             slider_range = svs.vertical_slider(min_value=0.0+(2000*i), max_value=0+(2000*(i+1)), default_value=(0+(2000*(i+1)))/2, step=10, key=i)
 
         # these three lines determine the range that will be modified by the slider
-        target_idx   = int((frequencise[i]-1)) 
-        target_idx_2 = int( (frequencise[i]+1))
+        target_idx   = int((frequencies[i]-1)) 
+        target_idx_2 = int( (frequencies[i]+1))
         if slider_range is not None:
             fourier_y_axis[target_idx - 1 : target_idx_2 + 2] *= slider_range
 

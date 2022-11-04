@@ -84,7 +84,7 @@ def audio_fourier_transform(audio_file):
     signal_y_axis = np.frombuffer(signal_wave, dtype=np.int16)
     signal_x_axis = np.linspace(0, duration, len(signal_y_axis))
 
-    plotting(signal_x_axis,signal_y_axis)
+    plotting(signal_x_axis[:1000],signal_y_axis[:1000])
     
     
     yf = rfft(signal_y_axis) # returns complex numbers of the y axis in the data frame
@@ -99,14 +99,14 @@ def audio_fourier_transform(audio_file):
     # slider_range = st.slider(label='hehe', min_value=0.0, max_value=2.0, value=1.0, step=.1)
     
     # these three lines determine the range that will be modified by the slider
-    # yf[:int(3300*points_per_freq)] *= 0
-  
+    yf[int(4000*points_per_freq)-1:int(4000*points_per_freq)+2] *= 0
+    
     plotting(xf,np.abs(yf))
     
     modified_signal = irfft(yf) # returning the inverse transform after modifying it with sliders 
     tryyy = np.int16(modified_signal)
 
-    plotting(signal_x_axis,tryyy)
+    plotting(signal_x_axis[:1000],tryyy[:1000])
     
     write("example.wav", sample_rate, tryyy)
     st.audio("example.wav", format='audio/wav')

@@ -136,6 +136,7 @@ def trial_fourier(dataframe,Fs,duration):
 
     new_sig = irfft(yf)
 
+    one_argument_plotting(new_sig[:1000])
     plt.plot(new_sig[:1000])
     plt.show()
 

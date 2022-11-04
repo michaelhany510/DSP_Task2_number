@@ -79,7 +79,7 @@ def wave_static_sliders(fourier_y_axis,pointsPerFrequency):
 
     # peak_frequencies = fourier_x_axis[peaks_indeces[:]]
     columns = st.columns(10)
-    frequencise = np.arange(20,21000,20)
+    frequencies = np.arange(20,21000,20)
 # [20,2000,4000,6000,8000,10000,12000,14000,16000,18000,20000]
 
     for i in range(10) :

@@ -56,10 +56,7 @@ def dataframe_creating_sliders(peaks_indeces,points_per_freq,fourier_x_axis,four
     for index, frequency in enumerate(peak_frequencies):
 
         with columns[index]:
-            slider_range = 1.0
             slider_range = svs.vertical_slider(min_value=0.0, max_value=2.0, default_value=1.0, step=0.1, key=index)
-            
-            st.write(type((slider_range)))
             
         # these three lines determine the range that will be modified by the slider
         target_idx   = int(points_per_freq * (peaks_indeces[index]-1)) 
@@ -73,11 +70,11 @@ def dataframe_creating_sliders(peaks_indeces,points_per_freq,fourier_x_axis,four
 def fourier_for_audio(uploaded_file):
     sample_rate, amplitude = wav.read(uploaded_file)  # kam sample fl sec fl track,amplitude l data
     amplitude = np.frombuffer(amplitude, "int32")     # str code khd mn dof3t 4 - 3 ayam search
-    fft_out = fft(amplitude)                          # el fourier bt3t el amplitude eli hnshtghl beha fl equalizer
-    fft_out = np.abs(fft_out)[:len(amplitude)//2]     # np.abs 3shan el rsm
+    fft_out = rfft(amplitude)                          # el fourier bt3t el amplitude eli hnshtghl beha fl equalizer
+    fft_out = np.abs(fft_out)    # np.abs 3shan el rsm
     # plt.plot(amplitude, np.abs(fft_out))
     # plt.show() satren code mbyrsmosh haga 
-    x_axis_fourier = fftfreq(len(amplitude),(1/sample_rate))[:len(amplitude)//2] #3shan mbd2sh mn -ve
+    x_axis_fourier = rfftfreq(len(amplitude),(1/sample_rate)) #3shan mbd2sh mn -ve
     return x_axis_fourier,fft_out
 
 #-------------------------------------- PLOTTING AUDIO ----------------------------------------------------

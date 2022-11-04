@@ -99,7 +99,17 @@ def audio_fourier_transform(audio_file):
     # slider_range = st.slider(label='hehe', min_value=0.0, max_value=2.0, value=1.0, step=.1)
     
     # these three lines determine the range that will be modified by the slider
-    yf[int(4000*points_per_freq)-1:int(4000*points_per_freq)+2] *= 0
+    yf[:int(1000*points_per_freq)] *= 0
+    yf[int(2500*points_per_freq):] *= 0
+    #tympani...  
+    # deleting from 0 to 1000 eliminates drums
+    #deleting from 0 to 3300 eleminates drums and biano
+    #deleting from 1000 to end keeps just drums
+    #keeping from 1000 to 3000 keeps pure biano and very litttle tympani
+    #same for 1000 to 2900
+    #keeping from 1000 to 2500 gives pure biano
+    
+    
     
     plotting(xf,np.abs(yf))
     

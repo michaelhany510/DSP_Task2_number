@@ -74,7 +74,7 @@ import pandas as pd
 # FT(data,Fs,duration)
 # print('Sampling Frequency is', Fs)
 import scipy
-def getPeaksIndices(xAxis,yAxis):
+def getPeaksFrequencies(xAxis,yAxis):
     
     amplitude = np.abs(scipy.fft.rfft(yAxis))
     frequency = scipy.fft.rfftfreq(len(xAxis), (xAxis[1]-xAxis[0]))
@@ -115,7 +115,7 @@ def trial_fourier(dataframe,Fs,duration):
 
     # peaks_psotion = signal_y_axis[peaks_indeces]
     
-    peaksPositions = np.round(getPeaksIndices(signal_x_axis,signal_y_axis),1)
+    peaksPositions = np.round(getPeaksFrequencies(signal_x_axis,signal_y_axis),1)
     
     print(peaksPositions)
     

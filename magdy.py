@@ -66,6 +66,25 @@ def dataframe_creating_sliders(peaks_indeces,points_per_freq,fourier_x_axis,four
 
     return fourier_y_axis
 
+def wave_static_sliders(fourier_y_axis):
+
+    # peak_frequencies = fourier_x_axis[peaks_indeces[:]]
+    columns = st.columns(10)
+    frequencise = np.arange(20,21000,20)
+# [20,2000,4000,6000,8000,10000,12000,14000,16000,18000,20000]
+
+    for i in range(10) :
+        with columns[i]:
+            slider_range = svs.vertical_slider(min_value=0.0+(2000*i), max_value=0+(2000*(i+1)), default_value=(0+(2000*(i+1)))/2, step=10, key=i)
+
+        # these three lines determine the range that will be modified by the slider
+        target_idx   = int((frequencise[i]-1)) 
+        target_idx_2 = int( (frequencise[i]+1))
+        if slider_range is not None:
+            fourier_y_axis[target_idx - 1 : target_idx_2 + 2] *= slider_range
+
+    return fourier_y_axis
+
 #-------------------------------------- Fourier Transform on Audio ----------------------------------------------------
 def fourier_for_audio(uploaded_file):
     sample_rate, amplitude = wav.read(uploaded_file)  # kam sample fl sec fl track,amplitude l data
@@ -75,7 +94,24 @@ def fourier_for_audio(uploaded_file):
     # plt.plot(amplitude, np.abs(fft_out))
     # plt.show() satren code mbyrsmosh haga 
     x_axis_fourier = rfftfreq(len(amplitude),(1/sample_rate)) #3shan mbd2sh mn -ve
-    return x_axis_fourier,fft_out
+    plotting(x_axis_fourier,fft_out)
+
+
+    fourier_y_axis = wave_static_sliders( fft_out) # calling creating sliders function
+
+    modified_signal = irfft(fourier_y_axis) # returning the inverse transform after modifying it with sliders 
+
+    fig, axs = plt.subplots()
+    fig.set_size_inches(14,5)
+    
+    plt.plot(x_axis_fourier, np.abs(fourier_y_axis)) #plotting signal before modifying
+    st.plotly_chart(fig,use_container_width=True)
+
+    fig2, axs2 = plt.subplots()
+    fig2.set_size_inches(14,5)
+    plt.plot(x_axis_fourier,modified_signal) # ploting signal after modifying
+    st.plotly_chart(fig2,use_container_width=True)
+
 
 #-------------------------------------- PLOTTING AUDIO ----------------------------------------------------
 def plotting(x_axis_fourier,fft_out):

@@ -51,8 +51,7 @@ if uploaded_file is not None:
         # amplitude, frequency = librosa.load(uploaded_file)  # getting audio attributes which are amplitude and frequency (number of frames per second)
         # fn.plotting(amplitude, frequency)                   # librosa feha moshkla f fourier bokra inshalah afhmhalko
         st.audio(uploaded_file, format='audio/wav') 
-        xf,fft_out = fn.fourier_for_audio(uploaded_file)
-        fn.plotting(xf,fft_out)
+        fn.fourier_for_audio(uploaded_file)
 
 else:
     pass

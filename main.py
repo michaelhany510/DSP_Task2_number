@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import magdy as fn
+import debug as fn
 import librosa
 from scipy.io import wavfile as wav
 
@@ -50,8 +50,8 @@ if uploaded_file is not None:
         # st.audio(uploaded_file, format='audio/ogg')         # displaying the audio player
         # amplitude, frequency = librosa.load(uploaded_file)  # getting audio attributes which are amplitude and frequency (number of frames per second)
         # fn.plotting(amplitude, frequency)                   # librosa feha moshkla f fourier bokra inshalah afhmhalko
-        st.audio(uploaded_file, format='audio/wav') 
-        fn.fourier_for_audio(uploaded_file)
+        # st.audio(uploaded_file, format='audio/wav') 
+        fn.audio_fourier_transform(uploaded_file)
 
 else:
     pass

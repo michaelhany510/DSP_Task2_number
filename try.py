@@ -136,7 +136,7 @@ def trial_fourier(dataframe,Fs,duration):
 
     new_sig = irfft(yf)
 
-    one_argument_plotting(new_sig[:1000])
+    # one_argument_plotting(new_sig[:1000])
     plt.plot(new_sig[:1000])
     plt.show()
 
@@ -156,3 +156,10 @@ def trial_fourier(dataframe,Fs,duration):
 df = pd.read_csv('Signal 6.csv')
 df = pd.DataFrame(df)
 trial_fourier(df,2000,1)
+
+
+
+
+
+
+

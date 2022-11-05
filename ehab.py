@@ -10,20 +10,38 @@ import pandas as pd
 
 from scipy.io import wavfile
 from IPython.display import Audio
+st. set_page_config(layout="wide")
 st.title("hello world")
-sample_rate, tone = wavfile.read("piano.wav")
-tone = tone[:, 0]
+sample_rate, tone = wavfile.read("dsp.wav")
+# tone = tone[:, 0]
 duration = tone.shape[0]/sample_rate
+# duration = int(duration)
+st.write(tone.shape[0])
+st.write(sample_rate)
 st.write(duration)
+st.write(duration*sample_rate)
 normalized = np.int16((tone/tone.max())*32767)
 yf = rfft(normalized)
 xf = rfftfreq(tone.shape[0], 1/sample_rate)
-smaller = xf < 2000
-xf = xf*smaller
+# smaller = xf < 2000
+# xf = xf*smaller
 fig = plt.figure()
 plt.plot(xf, np.abs(yf))
 st.plotly_chart(fig, use_container_width=True)
-scaler = yf > 2000000000
-yf = yf*scaler
+
+points_per_freq = len(xf) / (sample_rate / 2)
+
+# Our target frequency is 4000 Hz
+target_idx1 = int(points_per_freq * 0)
+target_idx2 = int(points_per_freq * 1000)
+yf[target_idx1: target_idx2] *= 0
+
+fig = plt.figure()
 plt.plot(xf, np.abs(yf))
 st.plotly_chart(fig, use_container_width=True)
+
+modified = irfft(yf)
+
+norm_modified = np.int16(modified*(32767/modified.max()))
+
+wavfile.write("modified.wav", sample_rate, norm_modified)

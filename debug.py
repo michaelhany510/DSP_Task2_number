@@ -92,6 +92,10 @@ def audio_fourier_transform(audio_file):
 
     plotting(xf,np.abs(yf))
     
+    start = st.number_input('start')
+    end = st.number_input('end')
+    scale = st.number_input('scale')
+    
     peaks = find_peaks(yf)   # computes peaks of the signal 
     peaks_indeces = peaks[0] # indeces of frequency with high peaks
     points_per_freq = len(xf) / (xf[-1]) # NOT UNDERSTANDABLE 
@@ -99,8 +103,8 @@ def audio_fourier_transform(audio_file):
     # slider_range = st.slider(label='hehe', min_value=0.0, max_value=2.0, value=1.0, step=.1)
     
     # these three lines determine the range that will be modified by the slider
-    yf[:int(1000*points_per_freq)] *= 0
-    yf[int(2500*points_per_freq):] *= 0
+    yf[int(start*points_per_freq):int(end*points_per_freq)] *= scale
+    # yf[int(2500*points_per_freq):] *= 0
     #tympani...  
     # deleting from 0 to 1000 eliminates drums
     #deleting from 0 to 3300 eleminates drums and biano

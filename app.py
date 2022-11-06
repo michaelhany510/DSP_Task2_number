@@ -9,6 +9,7 @@ from scipy.signal import find_peaks
 import pandas as pd
 from scipy.io import wavfile
 from IPython.display import Audio
+import functions as fn
 
 st.set_page_config(layout="wide")
 
@@ -31,7 +32,7 @@ def head():
 
 
 def body():
-    file = st.file_uploader("Upload file", type=['wav', 'csv'])
+    file = st.sidebar.file_uploader("Upload file", type=['wav', 'csv'])
     with st.sidebar:
         option = st.selectbox(
             "Option", ["Uniform", "Music", "Vowels", "Medical", "Synthetic"])
@@ -54,10 +55,13 @@ def body():
         with st.sidebar:
             col1, col2 = st.columns(2)
             with col1:
-                comp_1 = st.slider("comp_1", min_value=0, max_value=10)
+                guitar = st.slider("guitar", 0, 10,1)
+                biano = st.slider("biano",0,10,1)
             with col2:
-                comp_2 = st.slider("comp_2", min_value=0, max_value=10)
-            comp_3 = st.slider("comp_3", min_value=0, max_value=10)
+                flute = st.slider("flute", 0,10,1)
+            spectroCheckBox = st.checkbox('Show spectrogram')
+        if file is not None:
+            fn.audio_fourier_transform(file,guitar,flute,biano,spectroCheckBox)
     elif option == "Vowels":
         with st.sidebar:
             col1, col2 = st.columns(2)

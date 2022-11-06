@@ -35,8 +35,8 @@ def body():
     file = st.sidebar.file_uploader("Upload file", type=['wav', 'csv'])
     with st.sidebar:
         option = st.selectbox(
-            "Option", ["Uniform", "Music", "Vowels", "Medical", "Synthetic"])
-    if option == "Uniform":
+            "Option", ["Music (uniform frequency sliders)", "Music", "Vowels", "Medical", "Synthetic", "Pitch modifier"])
+    if option == "Music (uniform frequency sliders)":
         with st.sidebar:
             col1, col2 = st.columns(2)
             with col1:
@@ -97,6 +97,15 @@ def body():
             with col2:
                 comp_3 = st.slider("comp_3", min_value=0, max_value=10)
                 comp_4 = st.slider("comp_4", min_value=0, max_value=10)
+
+    elif option == "Pitch modifier":
+        with st.sidebar:
+            semitone = st.slider("Semitone",-10,10, value=0)
+            spectroCheckBox = st.checkbox('Show spectrogram')
+        
+        if file is not None:
+            fn.pitch_modifier(file,semitone, spectroCheckBox)
+        
 
 
 if __name__ == "__main__":

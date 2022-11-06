@@ -14,6 +14,10 @@ import wave
 import IPython.display as ipd
 import librosa
 import librosa.display
+import soundfile as sf
+import pyrubberband as pyrb
+
+
 
 def getPeaksFrequencies(xAxis,yAxis):
     amplitude = np.abs(rfft(yAxis))
@@ -176,3 +180,50 @@ def plot_spectro(audio_file):
     # ax.set(title='')
     # # fig.colorbar(img, ax=ax, format="%+2.f dB")
     # st.pyplot(fig)
+
+def pitch_modifier (audio_file,semitone,spectroCheckBox):
+
+    """
+    Modifies the pitch of a given audio file
+    Arguments:
+        audio_file: Audio file in .wav format
+        semitone: half a tone higher or lower
+        spectroCheckBox: if you want to view the signal as a spectogram
+    """
+    fr = 20
+    column1,column2 = st.columns(2)
+    with column1:    
+        st.audio(audio_file, format='audio/wav') # displaying the audio
+    obj = wave.open(audio_file, 'rb')
+    sample_rate = obj.getframerate()      # number of samples per second
+    n_samples   = obj.getnframes()        # total number of samples in the whole audio
+    duration    = n_samples / sample_rate # duration of the audio file
+    signal_wave = obj.readframes(-1)      # amplitude of the sound
+
+    
+    signal_y_axis = np.frombuffer(signal_wave, dtype=np.int32)
+    signal_x_axis = np.linspace(0, duration, len(signal_y_axis))
+    with column1:
+        if not spectroCheckBox:
+            plotting(signal_x_axis[:1000],signal_y_axis[:1000])
+        else:
+            plot_spectro(audio_file.name)
+    
+    
+    y_shifted = librosa.effects.pitch_shift(signal_y_axis.astype(float), sample_rate, n_steps=semitone) # shifting the audio according to the semitone given
+
+   
+    sf.write(file='example.wav', samplerate= sample_rate, data= y_shifted) # reconstructing the proccessed signal
+
+    y_normalized = np.int32(y_shifted)
+
+    with column2:
+        st.audio("example.wav", format='audio/wav')
+        if not spectroCheckBox:
+            plotting(signal_x_axis[:1000],y_normalized[:1000])
+        else:
+            plot_spectro("example.wav")
+    # with column2:
+    #     plotting(xf,np.abs(yf))
+   
+

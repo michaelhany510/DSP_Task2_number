@@ -148,7 +148,7 @@ def vowel_audio_fourier_transform(file, er_vowel, a_vowel, iy_vowel, oo_vowel, u
     duration = n_samples / sample_rate  # duration of the audio file
     signal_wave = obj.readframes(-1)      # amplitude of the sound
 
-    signal_y_axis = np.frombuffer(signal_wave, dtype=np.int32)
+    signal_y_axis = np.frombuffer(signal_wave, dtype=np.int16)
     signal_x_axis = np.linspace(0, duration, len(signal_y_axis))
 
     with column1:
@@ -183,12 +183,12 @@ def vowel_audio_fourier_transform(file, er_vowel, a_vowel, iy_vowel, oo_vowel, u
     yf[int(2340*points_per_freq):int(2440*points_per_freq)] *= uh_vowel
 
     modified_signal = irfft(yf)
-    norm_modified = np.int32(modified_signal)
+    norm_modified = np.int16(modified_signal)
     
     write("vowel_modified.wav", sample_rate, norm_modified)
     
     with column2:
-        st.audio("vowel_modifies.wav", format='audio/wav')
+        st.audio("vowel_modified.wav", format='audio/wav')
         if not spectroCheckBox:
             plotting(signal_x_axis[:1000], norm_modified[:1000])
         else:

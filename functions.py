@@ -16,6 +16,11 @@ import librosa
 import librosa.display
 import soundfile as sf
 import pyrubberband as pyrb
+import plotly.express as px
+import plotly.graph_objs as go
+import matplotlib.pyplot as plt
+import math
+from plotly.subplots import make_subplots
 
 
 
@@ -141,9 +146,14 @@ def uniform_audio_fourier_transform(audio_file,comp_1,comp_2,comp_3,comp_4,comp_
    
 def plotting(x_axis_fourier,fft_out):
     # Plotting audio Signal
-    figure, axis = plt.subplots()
-    plt.subplots_adjust(hspace=1)
-    axis.plot(x_axis_fourier,fft_out)
+    # figure, axis = plt.subplots()
+    # plt.subplots_adjust(hspace=1)
+    # axis.plot(x_axis_fourier,fft_out)
+    figure = make_subplots(rows=2, cols=2,shared_yaxes=True)
+    #figure.update_xaxes(matches='x')
+    figure.add_trace(go.Scatter(y=fft_out,x=x_axis_fourier, mode="lines",name="Signal"), row=1)
+    #figure.add_trace(go.Scatter(y=fft_out,x=x_axis_fourier, mode="lines",name="transformed"), row=1, col=2)
+    figure.update_xaxes(matches='x')
     st.plotly_chart(figure,use_container_width=True)
 # def plotSpecGram(data,sampling_rate):
 #     # Plotting spectrogram

@@ -202,7 +202,7 @@ def plotting(x_axis_fourier, fft_out):
     figure = make_subplots(rows=2, cols=2, shared_yaxes=True)
     # figure.update_xaxes(matches='x')
     figure.add_trace(go.Scatter(y=fft_out, x=x_axis_fourier,
-                     mode="lines", name="Signal"), row=1)
+                     mode="lines", name="Signal"), row=1,col=1)
     #figure.add_trace(go.Scatter(y=fft_out,x=x_axis_fourier, mode="lines",name="transformed"), row=1, col=2)
     figure.update_xaxes(matches='x')
     st.plotly_chart(figure, use_container_width=True)

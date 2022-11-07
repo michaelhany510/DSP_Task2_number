@@ -14,6 +14,11 @@ import wave
 import IPython.display as ipd
 import librosa
 import librosa.display
+import streamlit.components.v1 as components
+import mpld3
+import altair as alt
+from vega_datasets import data
+
 
 def getPeaksFrequencies(xAxis,yAxis):
     amplitude = np.abs(rfft(yAxis))
@@ -38,7 +43,8 @@ def audio_fourier_transform(audio_file,guitar,flute,biano,spectroCheckBox):
     signal_x_axis = np.linspace(0, duration, len(signal_y_axis))
     with column1:
         if not spectroCheckBox:
-            plotting(signal_x_axis[:1000],signal_y_axis[:1000])
+            # plotting(signal_x_axis,signal_y_axis)
+            pass
         else:
             plot_spectro(audio_file.name)
     
@@ -68,19 +74,44 @@ def audio_fourier_transform(audio_file,guitar,flute,biano,spectroCheckBox):
     write("example.wav", sample_rate, tryyy)
     with column2:
         st.audio("example.wav", format='audio/wav')
-        if not spectroCheckBox:
-            plotting(signal_x_axis[:1000],tryyy[:1000])
-        else:
-            plot_spectro("example.wav")
+    if not spectroCheckBox:
+        pass
+        plotting(signal_x_axis[:1000],signal_y_axis[:1000],signal_x_axis[:1000],tryyy[:1000])
+    else:
+        plot_spectro("example.wav")
+    
     # with column2:
     #     plotting(xf,np.abs(yf))
     
-def plotting(x_axis_fourier,fft_out):
-    # Plotting audio Signal
-    figure, axis = plt.subplots()
-    plt.subplots_adjust(hspace=1)
-    axis.plot(x_axis_fourier,fft_out)
-    st.plotly_chart(figure,use_container_width=True)
+def plotting(x1,y1,x2,y2,checkBox=False):
+    data = {'xBefore':x1,'yBefore':y1,'xAfter':x2,'yAfter':y2}
+    df = pd.DataFrame(data)
+
+    chart1 = alt.Chart(df).mark_line().encode(
+        x='xBefore:Q',
+        y='yBefore:Q'
+    ).properties(
+        height=300,
+        width=300
+    )
+
+    chart2 = alt.Chart(data).mark_line().encode(
+        x='xAfter:Q',
+        y='yAfter:Q'
+    ).properties(
+        height=300,
+        width=100
+    )
+
+    chart = chart1 | chart2
+    st.altair_chart(chart, use_container_width=True)
+
+    # fig,ax = plt.subplots()
+    # ax.plot(x2,y2,alpha = 0.8)
+    # ax.plot(x1,y1,color='orange')
+    
+    # st.plotly_chart(fig)    
+    return
 # def plotSpecGram(data,sampling_rate):
 #     # Plotting spectrogram
 #     # figure, axis = plt.subplots()
@@ -89,16 +120,10 @@ def plotting(x_axis_fourier,fft_out):
 #     figure = plt.figure()
 #     figure.patch.set_facecolor('xkcd:#0e1117')
 #     st.pyplot(figure,use_container_width=True)
+   
 
 def plot_spectro(audio_file):
-    # if type(audio_file == 'str'):
-    # y, sr = librosa.load(audio_file)
-    # D = librosa.stft(y)  # STFT of y
-    # S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
-    # fig = plt.figure(figsize=[10,6])
-    # librosa.display.specshow(S_db)
-    # st.pyplot(fig)
-    
+   
     y, sr = librosa.load(audio_file)
     D = librosa.stft(y)  # STFT of y
     S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
@@ -107,12 +132,3 @@ def plot_spectro(audio_file):
     ax.set(title='')
     fig.colorbar(img, ax=ax, format="%+2.f dB")
     st.pyplot(fig)
-    
-    # y, sr = librosa.load(audio_file)
-    # # D = librosa.stft(y)  # STFT of y
-    # # S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
-    # fig, ax = plt.subplots()
-    # img = librosa.feature.melspectrogram(y,sr)
-    # ax.set(title='')
-    # # fig.colorbar(img, ax=ax, format="%+2.f dB")
-    # st.pyplot(fig)

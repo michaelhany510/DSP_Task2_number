@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import debug as fn
+import functions as fn
 import librosa
 from scipy.io import wavfile as wav
 

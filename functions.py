@@ -261,6 +261,7 @@ def plotting(x_axis_fourier, fft_out):
 #     figure = plt.figure()
 #     figure.patch.set_facecolor('xkcd:#0e1117')
 #     st.pyplot(figure,use_container_width=True)
+   
 
 
 def plot_spectro(audio_file):

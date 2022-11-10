@@ -10,6 +10,7 @@ import pandas as pd
 from scipy.io import wavfile
 from IPython.display import Audio
 import functions as fn
+import random
 
 st.set_page_config(layout="wide")
 
@@ -122,6 +123,7 @@ def body():
         if file is not None:
             fn.pitch_modifier(file, semitone, spectroCheckBox)
 
+    
 
 if __name__ == "__main__":
     head()

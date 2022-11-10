@@ -19,8 +19,10 @@ import pyrubberband as pyrb
 import plotly.express as px
 import plotly.graph_objs as go
 import matplotlib.pyplot as plt
-import math
 from plotly.subplots import make_subplots
+import altair as alt
+
+
 
 
 def getPeaksFrequencies(xAxis, yAxis):
@@ -28,6 +30,32 @@ def getPeaksFrequencies(xAxis, yAxis):
     frequency = rfftfreq(len(xAxis), (xAxis[1]-xAxis[0]))
     indices = find_peaks(amplitude)
     return np.round(frequency[indices[0]], 1)
+
+def initial_time_graph(df1,df2):
+        resize = alt.selection_interval(bind='scales')
+        chart1 = alt.Chart(df1).mark_line().encode(
+        x=alt.X('y:T', axis=alt.Axis(title='date',labels=False)),
+        y=alt.Y('x:Q',axis=alt.Axis(title='value'))
+        ).properties(
+            width=600,
+            height=300
+        ).add_selection(
+            resize
+        )
+
+        chart2 = alt.Chart(df2).mark_line().encode(
+            x=alt.X('y:T', axis=alt.Axis(title='date',labels=False)),
+            y=alt.Y('x:Q',axis=alt.Axis(title='value'))
+        ).properties(
+            width=600,
+            height=300
+        ).add_selection(
+            resize
+        )
+
+
+        chart=alt.concat(chart1, chart2)
+        return chart
 
 
 # -------------------------------------- Fourier Transform on Audio ----------------------------------------------------
@@ -85,6 +113,7 @@ def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, 
     column1, column2 = st.columns(2)
     with column1:
         st.audio(audio_file, format='audio/wav')  # displaying the audio
+        
     obj = wave.open(audio_file, 'rb')
     sample_rate = obj.getframerate()      # number of samples per second
     n_samples = obj.getnframes()        # total number of samples in the whole audio
@@ -96,9 +125,9 @@ def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, 
     with column1:
         if not spectroCheckBox:
             plotting(signal_x_axis[:1000], signal_y_axis[:1000])
+            
         else:
             plot_spectro(audio_file.name)
-
     # returns complex numbers of the y axis in the data frame
     yf = rfft(signal_y_axis)
     # returns the frequency x axis after fourier transform
@@ -134,6 +163,19 @@ def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, 
             plotting(signal_x_axis[:1000], tryyy[:1000])
         else:
             plot_spectro("example.wav")
+    
+    
+    df1 = pd.DataFrame({'x':signal_x_axis[:1000], 'y':signal_y_axis[:1000]})
+    df2 = pd.DataFrame({'x':signal_x_axis[:1000], 'y':tryyy[:1000]})
+    with column1:
+        plot= st.altair_chart(initial_time_graph(df1[:100],df2[:100]))
+        st.write(df1)
+    if st.button(label="Play"):
+            for i in range(0,1000):
+                # df1 = pd.DataFrame({'x':signal_x_axis[i:i+10], 'y':signal_y_axis[i:i+10]})
+                # df2 = pd.DataFrame({'x':signal_x_axis[i:i+10], 'y':tryyy[i:i+10]})
+                with column1:
+                    plot.altair_chart(initial_time_graph(df1[i:i+100],df2[i:i+100]))
     # with column2:
     #     plotting(xf,np.abs(yf))
 
@@ -142,6 +184,7 @@ def vowel_audio_fourier_transform(file, er_vowel, a_vowel, iy_vowel, oo_vowel, u
     column1, column2 = st.columns(2)
     with column1:
         st.audio(file, format='audio/wav')
+        
     obj = wave.open(file, 'rb')
     sample_rate = obj.getframerate()      # number of samples per second
     n_samples = obj.getnframes()        # total number of samples in the whole audio
@@ -205,7 +248,11 @@ def plotting(x_axis_fourier, fft_out):
                      mode="lines", name="Signal"), row=1,col=1)
     #figure.add_trace(go.Scatter(y=fft_out,x=x_axis_fourier, mode="lines",name="transformed"), row=1, col=2)
     figure.update_xaxes(matches='x')
+    
     st.plotly_chart(figure, use_container_width=True)
+    
+
+    
 # def plotSpecGram(data,sampling_rate):
 #     # Plotting spectrogram
 #     # figure, axis = plt.subplots()
@@ -286,3 +333,10 @@ def pitch_modifier(audio_file, semitone, spectroCheckBox):
             plot_spectro("example.wav")
     # with column2:
     #     plotting(xf,np.abs(yf))
+
+
+    #--------------------------------------------------------------- TESTING DYNAMIC GRAPHS ------------------------------------------------------------------
+
+
+
+   

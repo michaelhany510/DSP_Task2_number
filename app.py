@@ -41,8 +41,9 @@ def body():
         with st.sidebar:
             col1, col2 = st.columns(2)
             with col1:
-                comp_1 = st.slider("20-2000 Hz", min_value=0,
-                                   max_value=10, value=1)
+                # comp_1 = st.slider("20-2000 Hz", min_value=0,
+                #                    max_value=10, value=1)
+                comp_1 = fn.vertical_slider(1, 1,0, 10)
                 comp_2 = st.slider("2-4 KHz", min_value=0,
                                    max_value=10, value=1)
                 comp_3 = st.slider("4-6 KHz", min_value=0,

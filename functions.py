@@ -22,6 +22,18 @@ import plotly.graph_objs as go
 import matplotlib.pyplot as plt
 from plotly.subplots import make_subplots
 import altair as alt
+import time
+import os
+import streamlit.components.v1 as components
+
+
+parent_dir = os.path.dirname(os.path.abspath(__file__))
+build_dir = os.path.join(parent_dir, "build")
+_vertical_slider = components.declare_component("vertical_slider", path=build_dir)
+
+def vertical_slider(value, step, min=min, max=max, key=None):
+    slider_value = _vertical_slider(value=value,step=step, min=min, max=max, key=key, default=value)
+    return slider_value
 
 
 def getPeaksFrequencies(xAxis, yAxis):
@@ -167,7 +179,7 @@ def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, 
     df2 = pd.DataFrame({'x': signal_x_axis[:1000], 'y': tryyy[:1000]})
     with column1:
         plot = st.altair_chart(initial_time_graph(df1[:100], df2[:100]))
-        st.write(df1)
+        # st.write(df1)
     if st.button(label="Play"):
         for i in range(0, 1000):
             # df1 = pd.DataFrame({'x':signal_x_axis[i:i+10], 'y':signal_y_axis[i:i+10]})
@@ -360,3 +372,39 @@ def pitch_modifier(audio_file, semitone, spectroCheckBox):
     #     plotting(xf,np.abs(yf))
 
     # --------------------------------------------------------------- TESTING DYNAMIC GRAPHS ------------------------------------------------------------------
+
+def showing_audiotrack(time_axis,sound_axis, Fs, n):
+    # We use a variable previousTime to store the time when a plot update is made
+    # and to then compute the time taken to update the plot of the audio data.
+    previousTime = time.time()
+
+    # Turning the interactive mode on
+    plt.ion()
+
+    # Each time we go through a number of samples in the audio data that corresponds to one second of audio,
+    # we increase spentTime by one (1 second).
+    spentTime = 0
+
+    # Let's the define the update periodicity
+    updatePeriodicity = 2  # expressed in seconds
+
+    # Plotting the audio data and updating the plot
+    for i in range(n):
+        # Each time we read one second of audio data, we increase spentTime :
+        if i // Fs != (i-1) // Fs:
+            spentTime += 1
+        # We update the plot every updatePeriodicity seconds
+        if spentTime == updatePeriodicity:
+            # Clear the previous plot
+            plt.clf()
+            # Plot the audio data
+            plt.plot(time_axis, sound_axis)
+            # Plot a red line to keep track of the progression
+            plt.axvline(x=i / Fs, color='r')
+            plt.xlabel("Time (s)")
+            plt.ylabel("Audio")
+            plt.show()  # shows the plot
+            plt.pause(updatePeriodicity-(time.time()-previousTime))
+            # a forced pause to synchronize the audio being played with the audio track being displayed
+            previousTime = time.time()
+            spentTime = 0

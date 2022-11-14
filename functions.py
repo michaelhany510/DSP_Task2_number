@@ -107,7 +107,7 @@ def audio_fourier_transform(audio_file, guitar, flute, piano, spectroCheckBox):
     if not spectroCheckBox:
         if not st.session_state['played']:
             with placeHolder.container():
-                plotting(signal_x_axis[:1000],signal_y_axis[:1000],signal_x_axis[:1000], tryyy[:1000])
+                plotting(signal_x_axis,signal_y_axis,signal_x_axis, tryyy)
     else:
         with column2:
             plot_spectro("example.wav")
@@ -116,16 +116,21 @@ def audio_fourier_transform(audio_file, guitar, flute, piano, spectroCheckBox):
     
     pause = st.button('pause')    
     if st.button('play'):
-        st.session_state['played'] = True   
-        for i in range(st.session_state['stopPoint'],50):
-            st.session_state['stopPoint'] = i
-            with placeHolder.container():
-                plotting(signal_x_axis[:i],signal_y_axis[:i],signal_x_axis[:i], tryyy[:i])
-                time.sleep(0.2)
+        while True:
+            st.session_state['played'] = True   
+            for i in range(st.session_state['stopPoint'],len(signal_x_axis),len(signal_x_axis)//10//5):
+                st.session_state['stopPoint'] = i
+                mn = max(0,i-(len(signal_x_axis)//10))
+                st.session_state['startPoint'] = mn
+                with placeHolder.container(): 
+                    plotting(signal_x_axis[mn:i],signal_y_axis[mn:i],signal_x_axis[mn:i], tryyy[mn:i])
+                time.sleep(0.08)
+            st.session_state['stopPoint'] = 0
     stop = st.session_state['stopPoint']
+    start = st.session_state['startPoint']
     if st.session_state['played']:
         with placeHolder.container():
-            plotting(signal_x_axis[:stop],signal_y_axis[:stop],signal_x_axis[:stop], tryyy[:stop])
+            plotting(signal_x_axis[start:stop],signal_y_axis[start:stop],signal_x_axis[start:stop], tryyy[start:stop])
     
     
    

@@ -19,8 +19,8 @@ if 'stopPoint' not in st.session_state:
     st.session_state['stopPoint'] = 0
 if 'played' not in st.session_state:
     st.session_state['played'] = False
-
-
+if 'startPoint' not in st.session_state:
+    st.session_state['startPoint'] = 0
 
 def head():
     # with st.sidebar:

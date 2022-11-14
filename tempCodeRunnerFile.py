@@ -1,3 +1,5 @@
+# data = {'t':st.session_state['sum'][0],'signal':st.session_state['sum'][1]}
+#             df = pd.DataFrame(data)
 import altair as alt
 from vega_datasets import data
 

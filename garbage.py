@@ -214,3 +214,48 @@
 
     # st.plotly_chart(two_subplot_fig)
 
+
+def plotting(x,y):
+    # Plotting audio Signal
+    # figure, axis = plt.subplots()
+    # # plt.subplots_adjust(hspace=1)
+    # axis.plot(x[:1000],y[:1000])
+    # # axis.plot(x,y)
+    # st.plotly_chart(figure,use_container_width=True)
+    
+    # figure = plt.figure()
+    # axis1 = figure.add_axes([0,0,1,1])
+    # axis1.plot(x[:1000],y[:1000])
+    # axis2 = figure.add_axes([0,1,1,1])
+    # axis2.plot(x[:1000],y[:1000])
+    # # st.plotly_chart(figure)
+    # fig_html = mpld3.fig_to_html(figure)
+    # components.html(fig_html, height=1500)
+    
+    # two_subplot_fig = plt.figure(figsize=(6,6))
+    # plt.subplot(211)
+    # # plt.plot(x, y, color='tab:blue', marker=',')
+    # plt.plot(x[:1000], y[:1000], color='black')
+
+    # plt.subplot(212)
+    # plt.plot(x[:1000], y[:1000], color='tab:orange', linestyle='--')
+
+    # st.plotly_chart(two_subplot_fig)
+
+ 
+    # How to set the graph size 
+    # two_subplot_fig = plt.figure(figsize=(6,6))
+    # plt.subplot(211)
+    # # plt.plot(x, y, color='tab:blue', marker=',')
+    # plt.plot(x[:1000], y[:1000], color='black')
+
+    # plt.subplot(212)
+    # plt.plot(x[:1000], y[:1000], color='tab:orange', linestyle='--')
+
+    # # st.plotly_chart(two_subplot_fig)
+    # fig_html = mpld3.fig_to_html(two_subplot_fig)
+    # components.html(fig_html, height=600)
+
+    
+    
+    return

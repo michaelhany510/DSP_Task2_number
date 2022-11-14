@@ -15,6 +15,13 @@ import random
 st.set_page_config(layout="wide")
 
 
+if 'stopPoint' not in st.session_state:
+    st.session_state['stopPoint'] = 0
+if 'played' not in st.session_state:
+    st.session_state['played'] = False
+
+
+
 def head():
     # with st.sidebar:
     st.markdown("""

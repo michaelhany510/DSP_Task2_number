@@ -154,6 +154,7 @@ def audio_fourier_transform(audio_file, guitar, flute, piano, spectroCheckBox):
     start = st.button('start')
     pause = st.button('pause')
     resume = st.button('resume')
+    
     Dynamic_graph(signal_x_axis,signal_y_axis,tryyy,start,pause,resume)
     # placeHolder = st.empty()
     # if not spectroCheckBox:

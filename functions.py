@@ -11,10 +11,10 @@ from scipy.fft import irfft
 from scipy.io.wavfile import write
 from scipy.signal import find_peaks
 import wave
-from scipy import signal
 import IPython.display as ipd
 import librosa
 import librosa.display
+from scipy import signal
 import soundfile as sf
 import pyrubberband as pyrb
 import plotly.express as px
@@ -22,6 +22,7 @@ import plotly.graph_objs as go
 import matplotlib.pyplot as plt
 from plotly.subplots import make_subplots
 import altair as alt
+from playsound import playsound
 import time
 import os
 import streamlit.components.v1 as components
@@ -84,7 +85,8 @@ def audio_fourier_transform(audio_file, guitar, flute, piano, spectroCheckBox):
     signal_x_axis = np.linspace(0, duration, len(signal_y_axis))
     with column1:
         if not spectroCheckBox:
-            plotting(signal_x_axis[:1000], signal_y_axis[:1000])
+            pass
+            # plotting(signal_x_axis[:1000], signal_y_axis[:1000])
         else:
             plot_spectro(audio_file.name)
 
@@ -112,19 +114,40 @@ def audio_fourier_transform(audio_file, guitar, flute, piano, spectroCheckBox):
     write("example.wav", sample_rate, tryyy)
     with column2:
         st.audio("example.wav", format='audio/wav')
-        if not spectroCheckBox:
-            plotting(signal_x_axis[:1000], tryyy[:1000])
-        else:
+    placeHolder = st.empty()
+    if not spectroCheckBox:
+        if not st.session_state['played']:
+            with placeHolder.container():
+                plotting(
+                    signal_x_axis[:1000], signal_y_axis[:1000], signal_x_axis[:1000], tryyy[:1000])
+    else:
+        with column2:
             plot_spectro("example.wav")
     # with column2:
     #     plotting(xf,np.abs(yf))
+
+    pause = st.button('pause')
+    if st.button('play'):
+        st.session_state['played'] = True
+        for i in range(st.session_state['stopPoint'], 50):
+            st.session_state['stopPoint'] = i
+            with placeHolder.container():
+                plotting(signal_x_axis[:i], signal_y_axis[:i],
+                         signal_x_axis[:i], tryyy[:i])
+                time.sleep(0.2)
+    stop = st.session_state['stopPoint']
+    if st.session_state['played']:
+        with placeHolder.container():
+            plotting(signal_x_axis[:stop], signal_y_axis[:stop],
+                     signal_x_axis[:stop], tryyy[:stop])
+
+    # st.write(st.session_state['stopPoint'])
 
 
 def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, comp_5, comp_6, comp_7, comp_8, comp_9, comp_10, spectroCheckBox):
     column1, column2 = st.columns(2)
     with column1:
         st.audio(audio_file, format='audio/wav')  # displaying the audio
-
     obj = wave.open(audio_file, 'rb')
     sample_rate = obj.getframerate()      # number of samples per second
     n_samples = obj.getnframes()        # total number of samples in the whole audio
@@ -179,7 +202,7 @@ def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, 
     df2 = pd.DataFrame({'x': signal_x_axis[:1000], 'y': tryyy[:1000]})
     with column1:
         plot = st.altair_chart(initial_time_graph(df1[:100], df2[:100]))
-        # st.write(df1)
+        st.write(df1)
     if st.button(label="Play"):
         for i in range(0, 1000):
             # df1 = pd.DataFrame({'x':signal_x_axis[i:i+10], 'y':signal_y_axis[i:i+10]})
@@ -195,7 +218,7 @@ def vowel_triang_window(y, start, end, val, ppf):
     target = y[int(start*ppf):int(end*ppf)]
     if val == 0:
         window = -(signal.windows.triang(len(target))-1)
-    elif val==1:
+    elif val == 1:
         return target
     else:
         window = val * signal.windows.triang(len(target))
@@ -208,25 +231,24 @@ def vowel_audio_fourier_transform(file, er_vowel, a_vowel, iy_vowel, oo_vowel, u
     with column1:
         st.audio(file, format='audio/wav')
 
-    obj = wave.open(file, 'rb')
-    sample_rate = obj.getframerate()      # number of samples per second
-    n_samples = obj.getnframes()        # total number of samples in the whole audio
+    tone, sample_rate = sf.read(file)  # number of samples per second
+    n_samples = tone.shape[0]   # total number of samples in the whole audio
     duration = n_samples / sample_rate  # duration of the audio file
-    signal_wave = obj.readframes(-1)      # amplitude of the sound
 
-    signal_y_axis = np.frombuffer(signal_wave, dtype=np.int16)
+    signal_y_axis = tone
     signal_x_axis = np.linspace(0, duration, len(signal_y_axis))
 
     with column1:
         if not spectroCheckBox:
-            plotting(signal_x_axis[:1000], signal_y_axis[:1000])
+            pass
+            # plotting(signal_x_axis[:1000], signal_y_axis[:1000])
         else:
-            plot_spectro(file)
+            plot_spectro(file.name)
 
     yf = rfft(signal_y_axis)
-    xf = rfftfreq(len(signal_y_axis), (signal_x_axis[1]-signal_x_axis[0]))
+    xf = rfftfreq(len(signal_y_axis), 1/sample_rate)
 
-    points_per_freq = len(xf) / (xf[-1])
+    points_per_freq = len(xf) / (sample_rate/2)
     # er vowel frequencies
     yf[int(440*points_per_freq):int(540*points_per_freq)
        ] = vowel_triang_window(yf, 440, 540, er_vowel, points_per_freq)
@@ -262,29 +284,31 @@ def vowel_audio_fourier_transform(file, er_vowel, a_vowel, iy_vowel, oo_vowel, u
        ] = vowel_triang_window(yf, 1140, 1240, uh_vowel, points_per_freq)
     yf[int(2340*points_per_freq):int(2440*points_per_freq)
        ] = vowel_triang_window(yf, 2340, 2440, uh_vowel, points_per_freq)
-    modified_signal = irfft(yf)
-    norm_modified = np.int16(modified_signal)
 
-    write("vowel_modified.wav", sample_rate, norm_modified)
+    modified_signal = irfft(yf)
+
+    sf.write("vowel_modified.wav", modified_signal, sample_rate)
 
     with column2:
         st.audio("vowel_modified.wav", format='audio/wav')
         if not spectroCheckBox:
-            plotting(signal_x_axis[:1000], norm_modified[:1000])
+            pass
+            # plotting(signal_x_axis[:1000], modified_signal[:1000])
         else:
             plot_spectro("vowel_modified.wav")
 
 
-def plotting(x_axis_fourier, fft_out):
+def plotting(x1, y1, x2, y2):
     # Plotting audio Signal
     # figure, axis = plt.subplots()
     # plt.subplots_adjust(hspace=1)
     # axis.plot(x_axis_fourier,fft_out)
     figure = make_subplots(rows=2, cols=2, shared_yaxes=True)
     # figure.update_xaxes(matches='x')
-    figure.add_trace(go.Scatter(y=fft_out, x=x_axis_fourier,
-                     mode="lines", name="Signal"), row=1, col=1)
-    #figure.add_trace(go.Scatter(y=fft_out,x=x_axis_fourier, mode="lines",name="transformed"), row=1, col=2)
+    figure.add_trace(go.Scatter(y=y1, x=x1, mode="lines",
+                     name="Signal"), row=1, col=1)
+    figure.add_trace(go.Scatter(y=y2, x=x2, mode="lines",
+                     name="transformed"), row=1, col=2)
     figure.update_xaxes(matches='x')
 
     st.plotly_chart(figure, use_container_width=True)

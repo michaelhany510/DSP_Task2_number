@@ -402,9 +402,7 @@ def pitch_modifier(audio_file, semitone, spectroCheckBox):
     signal_y_axis = np.frombuffer(signal_wave, dtype=np.int32)
     signal_x_axis = np.linspace(0, duration, len(signal_y_axis))
     with column1:
-        if not spectroCheckBox:
-            plotting(signal_x_axis[:1000], signal_y_axis[:1000])
-        else:
+        if spectroCheckBox:
             plot_spectro(audio_file.name)
 
     y_shifted = librosa.effects.pitch_shift(signal_y_axis.astype(
@@ -417,9 +415,10 @@ def pitch_modifier(audio_file, semitone, spectroCheckBox):
 
     with column2:
         st.audio("example.wav", format='audio/wav')
-        if not spectroCheckBox:
-            plotting(signal_x_axis[:1000], y_normalized[:1000])
-        else:
+    if not spectroCheckBox:
+        plotting(signal_x_axis[:1000],signal_y_axis,signal_x_axis[:1000], y_normalized[:1000])
+    else:
+        with column2:
             plot_spectro("example.wav")
     # with column2:
     #     plotting(xf,np.abs(yf))

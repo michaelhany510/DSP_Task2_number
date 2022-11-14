@@ -1,3 +1,5 @@
+from IPython.display import Audio
+from scipy.io import wavfile
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.io.wavfile import write
@@ -8,41 +10,30 @@ import streamlit as st
 import plotly.graph_objects as go
 from scipy.signal import find_peaks
 import pandas as pd
-
-from scipy.io import wavfile
-from IPython.display import Audio
+import librosa
+import soundfile
 st. set_page_config(layout="wide")
 st.title("Vowels EQ")
-sample_rate, tone = wavfile.read("flat_back.wav")
-
-
-def vowel_triang_window(y, start, end, val):
-    target = y[int(start*points_per_freq):int(end*points_per_freq)]
-    if val == 0:
-        window = -(signal.windows.triang(len(target))-1)
-    else:
-        window = val * signal.windows.triang(len(target))
-
-    return [target[i]*window[i] for i in range(len(window))]
-
+tone, sample_rate = soundfile.read(
+    r"C:\Users\DELL\General\DSP Tasks\DSP_Task2_number\vowels\vvv.wav")
 
 # tone = tone[:, 0]
 duration = tone.shape[0]/sample_rate
-fig = plt.figure()
-plt.plot(np.linspace(0, np.ceil(duration), tone.shape[0]), tone)
-st.plotly_chart(fig, use_container_width=True)
+# fig = plt.figure()
+# plt.plot(np.linspace(0, np.ceil(duration), tone.shape[0]), tone)
+# st.plotly_chart(fig, use_container_width=True)
 # duration = int(duration)
 
-st.write(tone.shape[0])
-st.write(sample_rate)
-st.write(duration)
-st.write(duration*sample_rate)
-normalized = np.int16((tone/tone.max())*32767)
-yf = rfft(normalized)
+# st.write(tone.shape[0])
+# st.write(sample_rate)
+# st.write(duration)
+# st.write(duration*sample_rate)
+# normalized = tone.astype(np.int16)
+yf = rfft(tone)
 xf = rfftfreq(tone.shape[0], 1/sample_rate)
 # smaller = xf < 2000
 # xf = xf*smaller
-
+st.write("fft")
 fig = plt.figure()
 plt.plot(xf, np.abs(yf))
 st.plotly_chart(fig, use_container_width=True)
@@ -50,30 +41,33 @@ st.plotly_chart(fig, use_container_width=True)
 points_per_freq = len(xf) / (sample_rate / 2)
 st.write(points_per_freq)
 
-yf[int(460*points_per_freq):int(860*points_per_freq)
-   ] = vowel_triang_window(yf, 460, 860, 0)
-yf[int(1520*points_per_freq):int(1920*points_per_freq)
-   ] = vowel_triang_window(yf, 1520, 1920, 0)
-yf[int(2210*points_per_freq):int(2610*points_per_freq)
-   ] = vowel_triang_window(yf, 2210, 2610, 0)
-yf[int(3150*points_per_freq):int(3550*points_per_freq)
-   ] = vowel_triang_window(yf, 3150, 3550, 0)
-yf[int(3650*points_per_freq):int(4050*points_per_freq)
-   ] = vowel_triang_window(yf, 3650, 4050, 0)
+yf[int(100*points_per_freq):int(500*points_per_freq)] *= 0
+yf[int(9000*points_per_freq):int(14000*points_per_freq)] *= 0
 
-
+st.write("after processing")
 fig = plt.figure()
 plt.plot(xf, np.abs(yf))
 st.plotly_chart(fig, use_container_width=True)
 
 modified = irfft(yf)
 
-norm_modified = np.int16(modified*(32767/modified.max()))
-wavfile.write("modified.wav", sample_rate, norm_modified)
+# norm_modified = modified.astype(np.int16)
+soundfile.write("modified.wav", modified, sample_rate)
 
+# fig = plt.figure()
+# plt.plot(np.linspace(0, np.ceil(duration),
+#          modified.shape[0]), modified)
+# st.plotly_chart(fig, use_container_width=True)
+
+# for m -monkey
+tone, sample_rate = soundfile.read("modified.wav")
+duration = tone.shape[0]/sample_rate
+# normalized = np.int16((tone/tone.max())*32767)
+yf = rfft(tone)
+xf = rfftfreq(tone.shape[0], 1/sample_rate)
+st.write("returning to frequency domain")
 fig = plt.figure()
-plt.plot(np.linspace(0, np.ceil(duration),
-         norm_modified.shape[0]), norm_modified)
+plt.plot(xf, np.abs(yf))
 st.plotly_chart(fig, use_container_width=True)
 
 
@@ -114,7 +108,3 @@ st.plotly_chart(fig, use_container_width=True)
 # yf[int(300*points_per_freq)] *= 0
 # yf[int(2800*points_per_freq)] *= 0
 # yf[int(3300*points_per_freq)] *= 0
-
-# 50:350
-# 500:1200
-# 2500:4500

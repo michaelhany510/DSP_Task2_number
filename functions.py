@@ -25,38 +25,61 @@ import altair as alt
 from playsound import playsound
 import time
 
+class variabls:
+    points_num=1000
+    start=0
+    vowel_freq_ae=[860,2850]
+    vowel_freq_a=[850,2800]
+    slider_tuple=(vowel_freq_ae,vowel_freq_a)
 
-def getPeaksFrequencies(xAxis, yAxis):
-    amplitude = np.abs(rfft(yAxis))
-    frequency = rfftfreq(len(xAxis), (xAxis[1]-xAxis[0]))
-    indices = find_peaks(amplitude)
-    return np.round(frequency[indices[0]], 1)
+def plot_animation(df):
+    brush  = alt.selection_interval ()
+    chart1 = alt.Chart(df).mark_line().encode(
+            x=alt.X('time', axis=alt.Axis(title='Time')),
+        ).properties(
+            width=414,
+            height=250
+        ).add_selection(
+            brush
+        ).interactive()
+    
+    figure = chart1.encode(y=alt.Y('amplitude',axis=alt.Axis(title='Amplitude'))) | chart1.encode(y ='amplitude after processing').add_selection(
+            brush)
+    return figure
 
 
-def initial_time_graph(df1, df2):
-    resize = alt.selection_interval(bind='scales')
-    chart1 = alt.Chart(df1).mark_line().encode(
-        x=alt.X('y:T', axis=alt.Axis(title='date', labels=False)),
-        y=alt.Y('x:Q', axis=alt.Axis(title='value'))
-    ).properties(
-        width=600,
-        height=300
-    ).add_selection(
-        resize
-    )
+def Dynamic_graph(signal_x_axis, signal_y_axis, signal_y_axis1,start_btn,pause_btn,resume_btn):
+        df = pd.DataFrame({'time': signal_x_axis[::200], 'amplitude': signal_y_axis[:: 200], 'amplitude after processing': signal_y_axis1[::200]}, columns=['time', 'amplitude','amplitude after processing'])
 
-    chart2 = alt.Chart(df2).mark_line().encode(
-        x=alt.X('y:T', axis=alt.Axis(title='date', labels=False)),
-        y=alt.Y('x:Q', axis=alt.Axis(title='value'))
-    ).properties(
-        width=600,
-        height=300
-    ).add_selection(
-        resize
-    )
+        lines = plot_animation(df)
+        line_plot = st.altair_chart(lines)
 
-    chart = alt.concat(chart1, chart2)
-    return chart
+        N = df.shape[0]  # number of elements in the dataframe
+        burst = 10       # number of elements  to add to the plot
+        size = burst     # size of the current dataset
+
+        if start_btn:
+            for i in range(1, N):
+                variabls.start=i
+                step_df = df.iloc[0:size]
+                lines = plot_animation(step_df)
+                line_plot = line_plot.altair_chart(lines)
+                variabls.graph_size=size
+                size = i * burst 
+
+        if resume_btn: 
+            for i in range( variabls.start,N):
+                variabls.start=i
+                step_df     = df.iloc[0:size]
+                lines       = plot_animation(step_df)
+                line_plot   = line_plot.altair_chart(lines)
+                variabls.graph_size=size
+                size = i * burst
+
+        if pause_btn:
+            step_df = df.iloc[0:variabls.graph_size]
+            lines = plot_animation(step_df)
+            line_plot = line_plot.altair_chart(lines)
 
 
 # -------------------------------------- Fourier Transform on Audio ----------------------------------------------------
@@ -103,34 +126,39 @@ def audio_fourier_transform(audio_file, guitar, flute, piano, spectroCheckBox):
     write("example.wav", sample_rate, tryyy)
     with column2:
         st.audio("example.wav", format='audio/wav')
-    placeHolder = st.empty()
-    if not spectroCheckBox:
-        if not st.session_state['played']:
-            with placeHolder.container():
-                plotting(signal_x_axis,signal_y_axis,signal_x_axis, tryyy)
-    else:
-        with column2:
-            plot_spectro("example.wav")
-    # with column2:
-    #     plotting(xf,np.abs(yf))
-
+    
+    start = st.button('start')
     pause = st.button('pause')
-    if st.button('play'):
-        while True:
-            st.session_state['played'] = True   
-            for i in range(st.session_state['stopPoint'],len(signal_x_axis),len(signal_x_axis)//10//5):
-                st.session_state['stopPoint'] = i
-                mn = max(0,i-(len(signal_x_axis)//10))
-                st.session_state['startPoint'] = mn
-                with placeHolder.container(): 
-                    plotting(signal_x_axis[mn:i],signal_y_axis[mn:i],signal_x_axis[mn:i], tryyy[mn:i])
-                time.sleep(0.08)
-            st.session_state['stopPoint'] = 0
-    stop = st.session_state['stopPoint']
-    start = st.session_state['startPoint']
-    if st.session_state['played']:
-        with placeHolder.container():
-            plotting(signal_x_axis[start:stop],signal_y_axis[start:stop],signal_x_axis[start:stop], tryyy[start:stop])
+    resume = st.button('resume')
+    Dynamic_graph(signal_x_axis,signal_y_axis,tryyy,start,pause,resume)
+    # placeHolder = st.empty()
+    # if not spectroCheckBox:
+    #     if not st.session_state['played']:
+    #         with placeHolder.container():
+    #             plotting(signal_x_axis,signal_y_axis,signal_x_axis, tryyy)
+    # else:
+    #     with column2:
+    #         plot_spectro("example.wav")
+    # # with column2:
+    # #     plotting(xf,np.abs(yf))
+
+    # pause = st.button('pause')
+    # if st.button('play'):
+    #     while True:
+    #         st.session_state['played'] = True   
+    #         for i in range(st.session_state['stopPoint'],len(signal_x_axis),len(signal_x_axis)//10//5):
+    #             st.session_state['stopPoint'] = i
+    #             mn = max(0,i-(len(signal_x_axis)//10))
+    #             st.session_state['startPoint'] = mn
+    #             with placeHolder.container(): 
+    #                 plotting(signal_x_axis[mn:i],signal_y_axis[mn:i],signal_x_axis[mn:i], tryyy[mn:i])
+    #             time.sleep(0.08)
+    #         st.session_state['stopPoint'] = 0
+    # stop = st.session_state['stopPoint']
+    # start = st.session_state['startPoint']
+    # if st.session_state['played']:
+    #     with placeHolder.container():
+    #         plotting(signal_x_axis[start:stop],signal_y_axis[start:stop],signal_x_axis[start:stop], tryyy[start:stop])
     
     
    

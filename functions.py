@@ -14,6 +14,7 @@ import wave
 import IPython.display as ipd
 import librosa
 import librosa.display
+from scipy import signal
 import soundfile as sf
 import pyrubberband as pyrb
 import plotly.express as px
@@ -202,6 +203,18 @@ def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, 
     #     plotting(xf,np.abs(yf))
 
 
+def vowel_triang_window(y, start, end, val, ppf):
+    target = y[int(start*ppf):int(end*ppf)]
+    if val == 0:
+        window = -(signal.windows.triang(len(target))-1)
+    elif val == 1:
+        return target
+    else:
+        window = val * signal.windows.triang(len(target))
+
+    return [target[i]*window[i] for i in range(len(window))]
+
+
 def vowel_audio_fourier_transform(file, er_vowel, a_vowel, iy_vowel, oo_vowel, uh_vowel, spectroCheckBox):
     column1, column2 = st.columns(2)
     with column1:
@@ -226,25 +239,40 @@ def vowel_audio_fourier_transform(file, er_vowel, a_vowel, iy_vowel, oo_vowel, u
 
     points_per_freq = len(xf) / (sample_rate/2)
     # er vowel frequencies
-    yf[int(440*points_per_freq):int(540*points_per_freq)] *= er_vowel
-    yf[int(1300*points_per_freq):int(1400*points_per_freq)] *= er_vowel
-    yf[int(1640*points_per_freq):int(1740*points_per_freq)] *= er_vowel
+    yf[int(440*points_per_freq):int(540*points_per_freq)
+       ] = vowel_triang_window(yf, 440, 540, er_vowel, points_per_freq)
+    yf[int(1300*points_per_freq):int(1400*points_per_freq)
+       ] = vowel_triang_window(yf, 1300, 1400, er_vowel, points_per_freq)
+    yf[int(1640*points_per_freq):int(1740*points_per_freq)
+       ] = vowel_triang_window(yf, 1640, 1740, er_vowel, points_per_freq)
     # a vowel frequencies
-    yf[int(680*points_per_freq):int(780*points_per_freq)] *= a_vowel
-    yf[int(1040*points_per_freq):int(1140*points_per_freq)] *= a_vowel
-    yf[int(2390*points_per_freq):int(2490*points_per_freq)] *= a_vowel
+    yf[int(680*points_per_freq):int(780*points_per_freq)
+       ] = vowel_triang_window(yf, 680, 780, a_vowel, points_per_freq)
+    yf[int(1040*points_per_freq):int(1140*points_per_freq)
+       ] = vowel_triang_window(yf, 1040, 1140, a_vowel, points_per_freq)
+    yf[int(2390*points_per_freq):int(2490*points_per_freq)
+       ] = vowel_triang_window(yf, 2390, 2490, a_vowel, points_per_freq)
     # iy vowel frequencies
-    yf[int(220*points_per_freq):int(320*points_per_freq)] *= iy_vowel
-    yf[int(2240*points_per_freq):int(2340*points_per_freq)] *= iy_vowel
-    yf[int(2960*points_per_freq):int(3060*points_per_freq)] *= iy_vowel
+    yf[int(220*points_per_freq):int(320*points_per_freq)
+       ] = vowel_triang_window(yf, 220, 320, iy_vowel, points_per_freq)
+    yf[int(2240*points_per_freq):int(2340*points_per_freq)
+       ] = vowel_triang_window(yf, 2240, 2340, iy_vowel, points_per_freq)
+    yf[int(2960*points_per_freq):int(3060*points_per_freq)
+       ] = vowel_triang_window(yf, 2960, 3060, iy_vowel, points_per_freq)
     # oo vowel frequencies
-    yf[int(250*points_per_freq):int(350*points_per_freq)] *= oo_vowel
-    yf[int(820*points_per_freq):int(920*points_per_freq)] *= oo_vowel
-    yf[int(2360*points_per_freq):int(2460*points_per_freq)] *= oo_vowel
+    yf[int(250*points_per_freq):int(350*points_per_freq)
+       ] = vowel_triang_window(yf, 250, 350, oo_vowel, points_per_freq)
+    yf[int(820*points_per_freq):int(920*points_per_freq)
+       ] = vowel_triang_window(yf, 820, 920, oo_vowel, points_per_freq)
+    yf[int(2360*points_per_freq):int(2460*points_per_freq)
+       ] = vowel_triang_window(yf, 2360, 2460, oo_vowel, points_per_freq)
     # uh vowel frequencies
-    yf[int(470*points_per_freq):int(570*points_per_freq)] *= uh_vowel
-    yf[int(1140*points_per_freq):int(1240*points_per_freq)] *= uh_vowel
-    yf[int(2340*points_per_freq):int(2440*points_per_freq)] *= uh_vowel
+    yf[int(470*points_per_freq):int(570*points_per_freq)
+       ] = vowel_triang_window(yf, 470, 570, uh_vowel, points_per_freq)
+    yf[int(1140*points_per_freq):int(1240*points_per_freq)
+       ] = vowel_triang_window(yf, 1140, 1240, uh_vowel, points_per_freq)
+    yf[int(2340*points_per_freq):int(2440*points_per_freq)
+       ] = vowel_triang_window(yf, 2340, 2440, uh_vowel, points_per_freq)
 
     modified_signal = irfft(yf)
 

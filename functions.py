@@ -415,13 +415,41 @@ def pitch_modifier(audio_file, semitone, spectroCheckBox):
 
     with column2:
         st.audio("example.wav", format='audio/wav')
+    # if not spectroCheckBox:
+    #     plotting(signal_x_axis[:1000],signal_y_axis,signal_x_axis[:1000], y_normalized[:1000])
+    # else:
+    #     with column2:
+    #         plot_spectro("example.wav")
+    # with column2:
+    #     plotting(xf,np.abs(yf))
+    placeHolder = st.empty()
     if not spectroCheckBox:
-        plotting(signal_x_axis[:1000],signal_y_axis,signal_x_axis[:1000], y_normalized[:1000])
+        if not st.session_state['played']:
+            with placeHolder.container():
+                plotting(
+                    signal_x_axis[:1000], signal_y_axis[:1000], signal_x_axis[:1000], y_normalized[:1000])
     else:
         with column2:
             plot_spectro("example.wav")
     # with column2:
     #     plotting(xf,np.abs(yf))
+
+    pause = st.button('pause')
+    if st.button('play'):
+        st.session_state['played'] = True
+        for i in range(st.session_state['stopPoint'], 50):
+            st.session_state['stopPoint'] = i
+            with placeHolder.container():
+                plotting(signal_x_axis[:i], signal_y_axis[:i],
+                         signal_x_axis[:i], y_normalized[:i])
+                time.sleep(0.2)
+    stop = st.session_state['stopPoint']
+    if st.session_state['played']:
+        with placeHolder.container():
+            plotting(signal_x_axis[:stop], signal_y_axis[:stop],
+                     signal_x_axis[:stop], y_normalized[:stop])
+
+
 
     # --------------------------------------------------------------- TESTING DYNAMIC GRAPHS ------------------------------------------------------------------
 

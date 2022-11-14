@@ -38,55 +38,74 @@ def head():
         """, unsafe_allow_html=True
                )
 
-
+    
 def body():
+    graph_container = st.container()
     file = st.sidebar.file_uploader("Upload file", type=['wav', 'csv'])
     with st.sidebar:
         option = st.selectbox(
             "Option", ["Music (uniform frequency sliders)", "Music", "Vowels", "Medical", "Synthetic", "Pitch modifier"])
     if option == "Music (uniform frequency sliders)":
-        with st.sidebar:
-            col1, col2 = st.columns(2)
-            with col1:
-                # comp_1 = st.slider("20-2000 Hz", min_value=0,
-                #                    max_value=10, value=1)
-                comp_1 = fn.vertical_slider(1, 1,0, 10)
-                comp_2 = st.slider("2-4 KHz", min_value=0,
-                                   max_value=10, value=1)
-                comp_3 = st.slider("4-6 KHz", min_value=0,
-                                   max_value=10, value=1)
-                comp_4 = st.slider("6-8 KHz", min_value=0,
-                                   max_value=10, value=1)
-                comp_5 = st.slider("8-10 KHz ", min_value=0,
-                                   max_value=10, value=1)
+       
+        col1 ,col2,col3,col4,col5,col6,col7,col8,col9,col10 = st.columns(10) 
 
-            with col2:
-                comp_6 = st.slider("10-12 KHz", min_value=0,
-                                   max_value=10, value=1)
-                comp_7 = st.slider("12-14 KHz", min_value=0,
-                                   max_value=10, value=1)
-                comp_8 = st.slider("14-16 KHz", min_value=0,
-                                   max_value=10, value=1)
-                comp_9 = st.slider("16-18 KHz", min_value=0,
-                                   max_value=10, value=1)
-                comp_10 = st.slider("18-20 KHz", min_value=0,
-                                    max_value=10, value=1)
-            spectroCheckBox = st.checkbox('Show spectrogram')
+        
+    
+        # comp_1 = st.slider("20-2000 Hz", min_value=0,
+        #                    max_value=10, value=1)
+        
+        
+       
+        
+        spectroCheckBox = st.sidebar.checkbox('Show spectrogram')
         if file is not None:
-            fn.uniform_audio_fourier_transform(
-                file, comp_1, comp_2, comp_3, comp_4, comp_5, comp_6, comp_7, comp_8, comp_9, comp_10, spectroCheckBox)
-    elif option == "Music":
-        with st.sidebar:
-            col1, col2 = st.columns(2)
             with col1:
-                guitar = st.slider("guitar", 0, 10, 1)
-                piano = st.slider("piano", 0, 10, 1)
+                comp_1 = fn.vertical_slider("20-2000 Hz",1, 1,0, 10,4)
             with col2:
-                flute = st.slider("flute", 0, 10, 1)
-            spectroCheckBox = st.checkbox('Show spectrogram')
+                comp_2 = fn.vertical_slider("2-4 KHz",1, 1,0, 10,5)
+            with col3:
+                comp_3 = fn.vertical_slider("4-6 KHz",1, 1,0, 10,6)
+            with col4:
+                comp_4 = fn.vertical_slider("6-8 KHz",1, 1,0, 10,7)
+            with col5:
+                comp_5 = fn.vertical_slider("8-10 KHz ",1, 1,0, 10,8)
+            with col6:
+                comp_6 = fn.vertical_slider("10-12 KHz",1, 1,0, 10,9)
+            with col7:
+                comp_7 = fn.vertical_slider("12-14 KHz",1, 1,0, 10,10)
+            with col8:
+                comp_8 = fn.vertical_slider("14-16 KHz",1, 1,0, 10,11)
+            with col9:
+                comp_9 = fn.vertical_slider("16-18 KHz",1, 1,0, 10,12)
+            with col10:
+                comp_10 = fn.vertical_slider("18-20 KHz",1, 1,0, 10,13)
+                
+            with graph_container:
+                fn.uniform_audio_fourier_transform(
+                    file, comp_1, comp_2, comp_3, comp_4, comp_5, comp_6, comp_7, comp_8, comp_9, comp_10, spectroCheckBox)
+    elif option == "Music":
+        col1, col2,col3 = st.columns(3)
+        
+        # with st.sidebar:
+        #     col1, col2 = st.columns(2)
+        #     with col1:
+        #         # guitar = st.slider("guitar", 0, 10, 1)
+        #         piano = st.slider("piano", 0, 10, 1)
+        #     with col2:
+        #         flute = st.slider("flute", 0, 10, 1)
+        
+        spectroCheckBox = st.sidebar.checkbox('Show spectrogram')
         if file is not None:
-            fn.audio_fourier_transform(
-                file, guitar, flute, piano, spectroCheckBox)
+            with col1:
+                guitar = fn.vertical_slider("Guitar",1,1, 0, 10, 1)
+            with col2:
+                piano = fn.vertical_slider("Piano",1,1, 0, 10, 2)
+            with col3:
+                flute = fn.vertical_slider("Fluet",1,1, 0, 10, 3)
+
+            with graph_container:
+                fn.audio_fourier_transform(
+                    file, guitar, flute, piano, spectroCheckBox)
     elif option == "Vowels":
         with st.sidebar:
             col1, col2 = st.columns(2)

@@ -24,6 +24,30 @@ from plotly.subplots import make_subplots
 import altair as alt
 from playsound import playsound
 import time
+import os
+import streamlit.components.v1 as components
+
+
+parent_dir = os.path.dirname(os.path.abspath(__file__))
+build_dir = os.path.join(parent_dir, "build")
+_vertical_slider = components.declare_component("vertical_slider", path=build_dir)
+
+def vertical_slider(label ,value, step, min=min, max=max, key=None):
+    st.markdown(f"<h4 style='text-align: center; color: black; '>{label}</h4>", unsafe_allow_html=True)
+    slider_value = _vertical_slider(value=value,step=step, min=min, max=max, key=key, default=value)
+    return slider_value
+
+# def music_sliders():
+#     col1 , col2 , col3 = st.columns(3)
+#     with col1:
+#         guitar = vertical_slider("Guitar",1,1, 0, 10, 1)
+#     with col2:
+#         flute = vertical_slider("Flute",1,1, 0, 10, 1)
+#     with col3:
+#         piano = vertical_slider("Piano",1,1, 0, 10, 1)
+
+
+
 
 class variabls:
     points_num=1000
@@ -178,10 +202,7 @@ def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, 
     signal_y_axis = np.frombuffer(signal_wave, dtype=np.int32)
     signal_x_axis = np.linspace(0, duration, len(signal_y_axis))
     with column1:
-        if not spectroCheckBox:
-            plotting(signal_x_axis[:1000], signal_y_axis[:1000])
-
-        else:
+        if spectroCheckBox:
             plot_spectro(audio_file.name)
     # returns complex numbers of the y axis in the data frame
     yf = rfft(signal_y_axis)
@@ -212,28 +233,43 @@ def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, 
     tryyy = np.int32(modified_signal)
 
     write("example.wav", sample_rate, tryyy)
+    # plotting(signal_x_axis[:1000], signal_y_axis[:1000])
     with column2:
         st.audio("example.wav", format='audio/wav')
-        if not spectroCheckBox:
-            plotting(signal_x_axis[:1000], tryyy[:1000])
-        else:
-            plot_spectro("example.wav")
+    # if not spectroCheckBox:
+    #     plotting(signal_x_axis[:1000], signal_y_axis[:1000], signal_x_axis[:1000], tryyy[:1000])
+    # else:
+    #     plot_spectro("example.wav")
 
-    df1 = pd.DataFrame({'x': signal_x_axis[:1000], 'y': signal_y_axis[:1000]})
-    df2 = pd.DataFrame({'x': signal_x_axis[:1000], 'y': tryyy[:1000]})
-    with column1:
-        plot = st.altair_chart(initial_time_graph(df1[:100], df2[:100]))
-        # st.write(df1)
-    if st.button(label="Play"):
-        for i in range(0, 1000):
-            # df1 = pd.DataFrame({'x':signal_x_axis[i:i+10], 'y':signal_y_axis[i:i+10]})
-            # df2 = pd.DataFrame({'x':signal_x_axis[i:i+10], 'y':tryyy[i:i+10]})
-            with column1:
-                plot.altair_chart(initial_time_graph(
-                    df1[i:i+100], df2[i:i+100]))
+    placeHolder = st.empty()
+    if not spectroCheckBox:
+        if not st.session_state['played']:
+            with placeHolder.container():
+                plotting(
+                    signal_x_axis[:1000], signal_y_axis[:1000], signal_x_axis[:1000], tryyy[:1000])
+    else:
+        with column2:
+            plot_spectro("example.wav")
     # with column2:
     #     plotting(xf,np.abs(yf))
 
+    pause = st.button('pause')
+    if st.button('play'):
+        st.session_state['played'] = True
+        for i in range(st.session_state['stopPoint'], 50):
+            st.session_state['stopPoint'] = i
+            with placeHolder.container():
+                plotting(signal_x_axis[:i], signal_y_axis[:i],
+                         signal_x_axis[:i], tryyy[:i])
+                time.sleep(0.2)
+    stop = st.session_state['stopPoint']
+    if st.session_state['played']:
+        with placeHolder.container():
+            plotting(signal_x_axis[:stop], signal_y_axis[:stop],
+                     signal_x_axis[:stop], tryyy[:stop])
+
+
+ 
 
 def vowel_triang_window(y, start, end, val, ppf):
     target = y[int(start*ppf):int(end*ppf)]
@@ -417,3 +453,39 @@ def pitch_modifier(audio_file, semitone, spectroCheckBox):
     #     plotting(xf,np.abs(yf))
 
     # --------------------------------------------------------------- TESTING DYNAMIC GRAPHS ------------------------------------------------------------------
+
+def showing_audiotrack(time_axis,sound_axis, Fs, n):
+    # We use a variable previousTime to store the time when a plot update is made
+    # and to then compute the time taken to update the plot of the audio data.
+    previousTime = time.time()
+
+    # Turning the interactive mode on
+    plt.ion()
+
+    # Each time we go through a number of samples in the audio data that corresponds to one second of audio,
+    # we increase spentTime by one (1 second).
+    spentTime = 0
+
+    # Let's the define the update periodicity
+    updatePeriodicity = 2  # expressed in seconds
+
+    # Plotting the audio data and updating the plot
+    for i in range(n):
+        # Each time we read one second of audio data, we increase spentTime :
+        if i // Fs != (i-1) // Fs:
+            spentTime += 1
+        # We update the plot every updatePeriodicity seconds
+        if spentTime == updatePeriodicity:
+            # Clear the previous plot
+            plt.clf()
+            # Plot the audio data
+            plt.plot(time_axis, sound_axis)
+            # Plot a red line to keep track of the progression
+            plt.axvline(x=i / Fs, color='r')
+            plt.xlabel("Time (s)")
+            plt.ylabel("Audio")
+            plt.show()  # shows the plot
+            plt.pause(updatePeriodicity-(time.time()-previousTime))
+            # a forced pause to synchronize the audio being played with the audio track being displayed
+            previousTime = time.time()
+            spentTime = 0

@@ -1,28 +1,20 @@
-import random
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import streamlit_vertical_slider as svs
-from scipy.fftpack import fft
-from scipy.fft import fft, fftfreq, fftshift
 from scipy.fft import rfft, rfftfreq
 from scipy.fft import irfft
 from scipy.io.wavfile import write
 from scipy.signal import find_peaks
 import wave
-import IPython.display as ipd
 import librosa
 import librosa.display
 from scipy import signal
 import soundfile as sf
-import pyrubberband as pyrb
-import plotly.express as px
 import plotly.graph_objs as go
 import matplotlib.pyplot as plt
 from plotly.subplots import make_subplots
 import altair as alt
-from playsound import playsound
 import time
 import os
 import streamlit.components.v1 as components
@@ -37,14 +29,6 @@ def vertical_slider(label ,value, step, min=min, max=max, key=None):
     slider_value = _vertical_slider(value=value,step=step, min=min, max=max, key=key, default=value)
     return slider_value
 
-# def music_sliders():
-#     col1 , col2 , col3 = st.columns(3)
-#     with col1:
-#         guitar = vertical_slider("Guitar",1,1, 0, 10, 1)
-#     with col2:
-#         flute = vertical_slider("Flute",1,1, 0, 10, 1)
-#     with col3:
-#         piano = vertical_slider("Piano",1,1, 0, 10, 1)
 
 
 
@@ -105,8 +89,37 @@ def Dynamic_graph(signal_x_axis, signal_y_axis, signal_y_axis1,start_btn,pause_b
             lines = plot_animation(step_df)
             line_plot = line_plot.altair_chart(lines)
 
+def dynamic_plotly(signal_x_axis,signal_y_axis,y_normalized,spectroCheckBox):
+    column1, column2 = st.columns(2)
+    placeHolder = st.empty()
+    if not spectroCheckBox:
+        if not st.session_state['played']:
+            with placeHolder.container():
+                plotting(
+                    signal_x_axis[:1000], signal_y_axis[:1000], signal_x_axis[:1000], y_normalized[:1000])
+    
+    # with column2:
+    #     plotting(xf,np.abs(yf))
 
-# -------------------------------------- Fourier Transform on Audio ----------------------------------------------------
+    pause = st.button('pause')
+    if st.button('play'):
+        st.session_state['played'] = True
+        for i in range(st.session_state['stopPoint'], 50):
+            st.session_state['stopPoint'] = i
+            with placeHolder.container():
+                plotting(signal_x_axis[:i], signal_y_axis[:i],
+                         signal_x_axis[:i], y_normalized[:i])
+                time.sleep(0.2)
+    stop = st.session_state['stopPoint']
+    if st.session_state['played']:
+        with placeHolder.container():
+            plotting(signal_x_axis[:stop], signal_y_axis[:stop],
+                     signal_x_axis[:stop], y_normalized[:stop])
+
+
+# ---------------------------------------------------------------------- FOURIER TRANSFORM ON AUDIO -----------------------------------------------------------------------
+
+
 def audio_fourier_transform(audio_file, guitar, flute, piano, spectroCheckBox):
     column1, column2 = st.columns(2)
     with column1:
@@ -190,10 +203,26 @@ def audio_fourier_transform(audio_file, guitar, flute, piano, spectroCheckBox):
     # st.write(st.session_state['stopPoint'])
 
 
+
+
+
+# ---------------------------------------------------------------------- UNIFORM FOURIER TRANSFORM ON AUDIO -----------------------------------------------------------------------
+
+
 def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, comp_5, comp_6, comp_7, comp_8, comp_9, comp_10, spectroCheckBox):
+    """
+    Deletes or multiples a range of frequencies(20 Hz-20 kHz) from an audio file
+    Arguments:
+        audio_file: Audio file in .wav format
+        comp1 - comp10: the factor multipler of every 2 kHz frequency band
+        spectroCheckBox: if you want to view the signal as a spectogram
+    """
+
+
     column1, column2 = st.columns(2)
     with column1:
         st.audio(audio_file, format='audio/wav')  # displaying the audio
+
     obj = wave.open(audio_file, 'rb')
     sample_rate = obj.getframerate()      # number of samples per second
     n_samples = obj.getnframes()        # total number of samples in the whole audio
@@ -202,22 +231,21 @@ def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, 
 
     signal_y_axis = np.frombuffer(signal_wave, dtype=np.int32)
     signal_x_axis = np.linspace(0, duration, len(signal_y_axis))
-    with column1:
-        if spectroCheckBox:
-            plot_spectro(audio_file.name)
+    
     # returns complex numbers of the y axis in the data frame
     yf = rfft(signal_y_axis)
+
     # returns the frequency x axis after fourier transform
     xf = rfftfreq(len(signal_y_axis), (signal_x_axis[1]-signal_x_axis[0]))
 
+
     peaks = find_peaks(yf)   # computes peaks of the signal
     peaks_indeces = peaks[0]  # indeces of frequency with high peaks
-    points_per_freq = len(xf) / (xf[-1])  # NOT UNDERSTANDABLE
+    points_per_freq = len(xf) / (xf[-1])  
 
-    # with column1:
-    #     plotting(xf,np.abs(yf))
+   
 
-    # these three lines determine the range that will be modified by the slider
+    # these 10 lines determine the range that will be modified by the slider
     yf[int(20*points_per_freq):int(2000*points_per_freq)] *= comp_1
     yf[int(2000*points_per_freq):int(4000*points_per_freq)] *= comp_2
     yf[int(4000*points_per_freq):int(6000*points_per_freq)] *= comp_3
@@ -229,48 +257,34 @@ def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, 
     yf[int(16000*points_per_freq):int(18000*points_per_freq)] *= comp_9
     yf[int(18000*points_per_freq):int(20000*points_per_freq)] *= comp_10
 
+
     # returning the inverse transform after modifying it with sliders
     modified_signal = irfft(yf)
-    tryyy = np.int32(modified_signal)
+    y_normalized = np.int32(modified_signal)
 
-    write("example.wav", sample_rate, tryyy)
-    # plotting(signal_x_axis[:1000], signal_y_axis[:1000])
+
+    # writing the modified signal to a .wav file to play & view it
+    write("example.wav", sample_rate, y_normalized)
     with column2:
         st.audio("example.wav", format='audio/wav')
-    # if not spectroCheckBox:
-    #     plotting(signal_x_axis[:1000], signal_y_axis[:1000], signal_x_axis[:1000], tryyy[:1000])
-    # else:
-    #     plot_spectro("example.wav")
 
-    placeHolder = st.empty()
+    
     if not spectroCheckBox:
-        if not st.session_state['played']:
-            with placeHolder.container():
-                plotting(
-                    signal_x_axis[:1000], signal_y_axis[:1000], signal_x_axis[:1000], tryyy[:1000])
+        dynamic_plotly(signal_x_axis,signal_y_axis,y_normalized,spectroCheckBox)
+        
     else:
+        with column1:
+            plot_spectro(audio_file.name)
         with column2:
+            
             plot_spectro("example.wav")
-    # with column2:
-    #     plotting(xf,np.abs(yf))
-
-    pause = st.button('pause')
-    if st.button('play'):
-        st.session_state['played'] = True
-        for i in range(st.session_state['stopPoint'], 50):
-            st.session_state['stopPoint'] = i
-            with placeHolder.container():
-                plotting(signal_x_axis[:i], signal_y_axis[:i],
-                         signal_x_axis[:i], tryyy[:i])
-                time.sleep(0.2)
-    stop = st.session_state['stopPoint']
-    if st.session_state['played']:
-        with placeHolder.container():
-            plotting(signal_x_axis[:stop], signal_y_axis[:stop],
-                     signal_x_axis[:stop], tryyy[:stop])
+   
 
 
- 
+
+
+#---------------------------------------------------------------------- VOWEL REMOVER/MODIFIER FUNCTION -------------------------------------------------------------------
+
 
 def vowel_triang_window(y, start, end, val, ppf):
     target = y[int(start*ppf):int(end*ppf)]
@@ -282,6 +296,7 @@ def vowel_triang_window(y, start, end, val, ppf):
         window = val * signal.windows.triang(len(target))
 
     return [target[i]*window[i] for i in range(len(window))]
+
 
 
 def vowel_audio_fourier_transform(file, er_vowel, a_vowel, iy_vowel, oo_vowel, uh_vowel, spectroCheckBox):
@@ -297,10 +312,7 @@ def vowel_audio_fourier_transform(file, er_vowel, a_vowel, iy_vowel, oo_vowel, u
     signal_x_axis = np.linspace(0, duration, len(signal_y_axis))
 
     with column1:
-        if not spectroCheckBox:
-            pass
-            # plotting(signal_x_axis[:1000], signal_y_axis[:1000])
-        else:
+        if spectroCheckBox:
             plot_spectro(file.name)
 
     yf = rfft(signal_y_axis)
@@ -349,65 +361,16 @@ def vowel_audio_fourier_transform(file, er_vowel, a_vowel, iy_vowel, oo_vowel, u
 
     with column2:
         st.audio("vowel_modified.wav", format='audio/wav')
-        if not spectroCheckBox:
-            pass
-            # plotting(signal_x_axis[:1000], modified_signal[:1000])
-        else:
+        if spectroCheckBox:
             plot_spectro("vowel_modified.wav")
 
 
-def plotting(x1, y1, x2, y2):
-    # Plotting audio Signal
-    # figure, axis = plt.subplots()
-    # plt.subplots_adjust(hspace=1)
-    # axis.plot(x_axis_fourier,fft_out)
-    figure = make_subplots(rows=2, cols=2, shared_yaxes=True)
-    # figure.update_xaxes(matches='x')
-    figure.add_trace(go.Scatter(y=y1, x=x1, mode="lines",
-                     name="Signal"), row=1, col=1)
-    figure.add_trace(go.Scatter(y=y2, x=x2, mode="lines",
-                     name="transformed"), row=1, col=2)
-    figure.update_xaxes(matches='x')
-
-    st.plotly_chart(figure, use_container_width=True)
 
 
-# def plotSpecGram(data,sampling_rate):
-#     # Plotting spectrogram
-#     # figure, axis = plt.subplots()
-#     # plt.subplots_adjust(hspace=1)
-#     # axis.specgram(data,sampling_rate,cmap = plt.cm.bone)
-#     figure = plt.figure()
-#     figure.patch.set_facecolor('xkcd:#0e1117')
-#     st.pyplot(figure,use_container_width=True)
 
 
-def plot_spectro(audio_file):
-    # if type(audio_file == 'str'):
-    # y, sr = librosa.load(audio_file)
-    # D = librosa.stft(y)  # STFT of y
-    # S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
-    # fig = plt.figure(figsize=[10,6])
-    # librosa.display.specshow(S_db)
-    # st.pyplot(fig)
 
-    y, sr = librosa.load(audio_file)
-    D = librosa.stft(y)  # STFT of y
-    S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
-    fig, ax = plt.subplots()
-    img = librosa.display.specshow(S_db, x_axis='time', y_axis='linear', ax=ax)
-    ax.set(title='')
-    fig.colorbar(img, ax=ax, format="%+2.f dB")
-    st.pyplot(fig)
-
-    # y, sr = librosa.load(audio_file)
-    # # D = librosa.stft(y)  # STFT of y
-    # # S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
-    # fig, ax = plt.subplots()
-    # img = librosa.feature.melspectrogram(y,sr)
-    # ax.set(title='')
-    # # fig.colorbar(img, ax=ax, format="%+2.f dB")
-    # st.pyplot(fig)
+#-------------------------------------------------------------------------- PITCH MODIFIER FUNCTION ---------------------------------------------------------------------------------------
 
 
 def pitch_modifier(audio_file, semitone, spectroCheckBox):
@@ -428,8 +391,10 @@ def pitch_modifier(audio_file, semitone, spectroCheckBox):
     duration = n_samples / sample_rate  # duration of the audio file
     signal_wave = obj.readframes(-1)      # amplitude of the sound
 
+
     signal_y_axis = np.frombuffer(signal_wave, dtype=np.int32)
     signal_x_axis = np.linspace(0, duration, len(signal_y_axis))
+
     with column1:
         if spectroCheckBox:
             plot_spectro(audio_file.name)
@@ -442,78 +407,46 @@ def pitch_modifier(audio_file, semitone, spectroCheckBox):
 
     y_normalized = np.int32(y_shifted)
 
+    # TODO remove after playing with buttons
     with column2:
         st.audio("example.wav", format='audio/wav')
-    # if not spectroCheckBox:
-    #     plotting(signal_x_axis[:1000],signal_y_axis,signal_x_axis[:1000], y_normalized[:1000])
-    # else:
-    #     with column2:
-    #         plot_spectro("example.wav")
-    # with column2:
-    #     plotting(xf,np.abs(yf))
-    placeHolder = st.empty()
-    if not spectroCheckBox:
-        if not st.session_state['played']:
-            with placeHolder.container():
-                plotting(
-                    signal_x_axis[:1000], signal_y_axis[:1000], signal_x_axis[:1000], y_normalized[:1000])
-    else:
-        with column2:
-            plot_spectro("example.wav")
-    # with column2:
-    #     plotting(xf,np.abs(yf))
 
-    pause = st.button('pause')
-    if st.button('play'):
-        st.session_state['played'] = True
-        for i in range(st.session_state['stopPoint'], 50):
-            st.session_state['stopPoint'] = i
-            with placeHolder.container():
-                plotting(signal_x_axis[:i], signal_y_axis[:i],
-                         signal_x_axis[:i], y_normalized[:i])
-                time.sleep(0.2)
-    stop = st.session_state['stopPoint']
-    if st.session_state['played']:
-        with placeHolder.container():
-            plotting(signal_x_axis[:stop], signal_y_axis[:stop],
-                     signal_x_axis[:stop], y_normalized[:stop])
+    # play/pause with plotly
+    dynamic_plotly(signal_x_axis,signal_y_axis,y_normalized,spectroCheckBox)
+   
 
 
 
-    # --------------------------------------------------------------- TESTING DYNAMIC GRAPHS ------------------------------------------------------------------
 
-def showing_audiotrack(time_axis,sound_axis, Fs, n):
-    # We use a variable previousTime to store the time when a plot update is made
-    # and to then compute the time taken to update the plot of the audio data.
-    previousTime = time.time()
 
-    # Turning the interactive mode on
-    plt.ion()
+############################################################################ PLOTTING FUNCTIONS ######################################################################################
 
-    # Each time we go through a number of samples in the audio data that corresponds to one second of audio,
-    # we increase spentTime by one (1 second).
-    spentTime = 0
 
-    # Let's the define the update periodicity
-    updatePeriodicity = 2  # expressed in seconds
+def plotting(x1, y1, x2, y2):
+   
+    figure = make_subplots(rows=2, cols=2, shared_yaxes=True)
 
-    # Plotting the audio data and updating the plot
-    for i in range(n):
-        # Each time we read one second of audio data, we increase spentTime :
-        if i // Fs != (i-1) // Fs:
-            spentTime += 1
-        # We update the plot every updatePeriodicity seconds
-        if spentTime == updatePeriodicity:
-            # Clear the previous plot
-            plt.clf()
-            # Plot the audio data
-            plt.plot(time_axis, sound_axis)
-            # Plot a red line to keep track of the progression
-            plt.axvline(x=i / Fs, color='r')
-            plt.xlabel("Time (s)")
-            plt.ylabel("Audio")
-            plt.show()  # shows the plot
-            plt.pause(updatePeriodicity-(time.time()-previousTime))
-            # a forced pause to synchronize the audio being played with the audio track being displayed
-            previousTime = time.time()
-            spentTime = 0
+    figure.add_trace(go.Scatter(y=y1, x=x1, mode="lines",
+                     name="Signal"), row=1, col=1)
+
+    figure.add_trace(go.Scatter(y=y2, x=x2, mode="lines",
+                     name="transformed"), row=1, col=2)
+
+    figure.update_xaxes(matches='x')
+
+    st.plotly_chart(figure, use_container_width=True)
+
+
+
+def plot_spectro(audio_file):
+
+    y, sr = librosa.load(audio_file)
+    D = librosa.stft(y)  # STFT of y
+    S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
+    fig, ax = plt.subplots()
+    img = librosa.display.specshow(S_db, x_axis='time', y_axis='linear', ax=ax)
+    ax.set(title='')
+    fig.colorbar(img, ax=ax, format="%+2.f dB")
+    st.pyplot(fig)
+
+

@@ -17,6 +17,8 @@ st.set_page_config(layout="wide")
 with open('style.css') as fileStyle:
     st.markdown(f'<style>{fileStyle.read()}</style>',unsafe_allow_html=True)
 
+uniformModeSlidersNames = ['20 - 2000 hz','2 - 4 khz','4 - 6 khz','6 - 8 khz','8 - 10 khz','10 - 12 khz','12 - 14 khz','14 - 16 khz','16 - 18 khz', '18 - 20 khz']
+
 if 'stopPoint' not in st.session_state:
     st.session_state['stopPoint'] = 0
 if 'played' not in st.session_state:
@@ -51,52 +53,20 @@ def body():
             "Option", ["Music (uniform frequency sliders)", "Music", "Vowels", "Medical", "Synthetic", "Pitch modifier"])
     if option == "Music (uniform frequency sliders)":
        
-        col1 ,col2,col3,col4,col5,col6,col7,col8,col9,col10 = st.columns(10) 
-
-        
-    
-        # comp_1 = st.slider("20-2000 Hz", min_value=0,
-        #                    max_value=10, value=1)
-        
-        
-       
+        columns = st.columns(10) 
         
         spectroCheckBox = st.sidebar.checkbox('Show spectrogram')
+        uniformModeSliders = []
         if file is not None:
-            with col1:
-                comp_1 = fn.vertical_slider("20-2000 Hz",1, 1,0, 10,4)
-            with col2:
-                comp_2 = fn.vertical_slider("2-4 KHz",1, 1,0, 10,5)
-            with col3:
-                comp_3 = fn.vertical_slider("4-6 KHz",1, 1,0, 10,6)
-            with col4:
-                comp_4 = fn.vertical_slider("6-8 KHz",1, 1,0, 10,7)
-            with col5:
-                comp_5 = fn.vertical_slider("8-10 KHz ",1, 1,0, 10,8)
-            with col6:
-                comp_6 = fn.vertical_slider("10-12 KHz",1, 1,0, 10,9)
-            with col7:
-                comp_7 = fn.vertical_slider("12-14 KHz",1, 1,0, 10,10)
-            with col8:
-                comp_8 = fn.vertical_slider("14-16 KHz",1, 1,0, 10,11)
-            with col9:
-                comp_9 = fn.vertical_slider("16-18 KHz",1, 1,0, 10,12)
-            with col10:
-                comp_10 = fn.vertical_slider("18-20 KHz",1, 1,0, 10,13)
-                
+            i = 0
+            for name in uniformModeSlidersNames:
+                with columns[i]:
+                    uniformModeSliders.append(fn.vertical_slider(name,1, 1,0, 10,10+i))
+                i += 1
             with graph_container:
-                fn.uniform_audio_fourier_transform(
-                    file, comp_1, comp_2, comp_3, comp_4, comp_5, comp_6, comp_7, comp_8, comp_9, comp_10, spectroCheckBox)
+                fn.uniform_audio_fourier_transform(file, uniformModeSliders, spectroCheckBox)
     elif option == "Music":
         col1, col2,col3 = st.columns(3)
-        
-        # with st.sidebar:
-        #     col1, col2 = st.columns(2)
-        #     with col1:
-        #         # guitar = st.slider("guitar", 0, 10, 1)
-        #         piano = st.slider("piano", 0, 10, 1)
-        #     with col2:
-        #         flute = st.slider("flute", 0, 10, 1)
         
         spectroCheckBox = st.sidebar.checkbox('Show spectrogram')
         if file is not None:

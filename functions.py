@@ -18,6 +18,8 @@ import altair as alt
 import time
 import os
 import streamlit.components.v1 as components
+from scipy.misc import electrocardiogram
+import scipy
 
 uniformModeRanges = [(20,2000),(2000,4000),(4000,6000),(6000,8000),(8000,10000),(10000,12000),(12000,14000),(14000,16000),(16000,18000),(18000,20000)]
 
@@ -249,7 +251,34 @@ def pitch_modifier(audio_file, semitone, spectroCheckBox):
     dynamicPlotly(signal_x_axis,signal_y_axis,y_normalized)
    
 
+def arrhythima():
+    col1, col2, col3 = st.columns([.2, .7, .1])
+    ecg = electrocardiogram()
 
+    fs = 360
+    time = np.arange(ecg.size) / fs
+
+    fourier_x_axis = scipy.fft.rfftfreq(len(ecg), (time[1]-time[0]))
+    fourier_y_axis = scipy.fft.rfft(ecg)
+
+    points_per_freq = len(fourier_x_axis) / (fourier_x_axis[-1])
+
+    value = st.slider(label="Arrhythmia", min_value=0,
+                      max_value=10, value=1, key=12)
+
+    fourier_y_axis[int(points_per_freq):int(points_per_freq*5)] *= value
+
+    modified_signal = scipy.fft.irfft(fourier_y_axis)
+
+    fig, axs = plt.subplots()
+    fig.set_size_inches(14, 5)
+
+    plt.plot(time, (modified_signal), color='#3182ce')
+    plt.xlabel("Time in s")
+    plt.ylabel("ECG in mV")
+    plt.xlim(45, 51)
+
+    col2.plotly_chart(fig)
 
 
 
@@ -272,14 +301,14 @@ def dynamicPlotly(signalX,signalYBefore,signalYAfter):
     
     if playButton:
         while True:
-            st.session_state['played'] = True   
-            for i in range(st.session_state['stopPoint'],len(signalX),100):
+            st.session_state['played'] = True
+            for i in range(st.session_state['stopPoint'],len(signalX),4):
                 st.session_state['stopPoint'] = i
-                mn = max(0,i-(len(signalX)//100))
+                mn = max(0,i-(len(signalX)//300))
                 st.session_state['startPoint'] = mn
                 with placeHolder.container(): 
                     plotting(signalX[mn:i],signalYBefore[mn:i],signalX[mn:i], signalYAfter[mn:i])
-                time.sleep(0.2)
+                time.sleep(0.00001)
             st.session_state['stopPoint'] = 0
     stop = st.session_state['stopPoint']
     start = st.session_state['startPoint']

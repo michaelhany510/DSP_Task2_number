@@ -127,6 +127,7 @@ def body():
             with col2:
                 comp_3 = st.slider("comp_3", min_value=0, max_value=10)
                 comp_4 = st.slider("comp_4", min_value=0, max_value=10)
+        fn.arrhythima()
 
     elif option == "Pitch modifier":
         with st.sidebar:

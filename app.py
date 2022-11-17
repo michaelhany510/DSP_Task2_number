@@ -14,6 +14,8 @@ import random
 
 st.set_page_config(layout="wide")
 
+with open('style.css') as fileStyle:
+    st.markdown(f'<style>{fileStyle.read()}</style>',unsafe_allow_html=True)
 
 if 'stopPoint' not in st.session_state:
     st.session_state['stopPoint'] = 0

@@ -184,76 +184,45 @@ def vowel_triang_window(y, start, end, val, ppf):
 
 
 
-def vowel_audio_fourier_transform(file, er_vowel, a_vowel, iy_vowel, oo_vowel, uh_vowel, spectroCheckBox):
+def vowel_audio_fourier_transform(file, ʃ_slider, ʊ_slider, a_slider, r_slider, b_slider, spectroCheckBox):
     column1, column2 = st.columns(2)
     with column1:
         st.audio(file, format='audio/wav')
-
     tone, sample_rate = sf.read(file)  # number of samples per second
     n_samples = tone.shape[0]   # total number of samples in the whole audio
     duration = n_samples / sample_rate  # duration of the audio file
-
     signal_y_axis = tone
     signal_x_axis = np.linspace(0, duration, len(signal_y_axis))
-
     with column1:
         if spectroCheckBox:
             plot_spectro(file.name)
-
+    
     yf = rfft(signal_y_axis)
     xf = rfftfreq(len(signal_y_axis), 1/sample_rate)
 
     points_per_freq = len(xf) / (sample_rate/2)
-    # er vowel frequencies
-    yf[int(440*points_per_freq):int(540*points_per_freq)
-       ] = vowel_triang_window(yf, 440, 540, er_vowel, points_per_freq)
-    yf[int(1300*points_per_freq):int(1400*points_per_freq)
-       ] = vowel_triang_window(yf, 1300, 1400, er_vowel, points_per_freq)
-    yf[int(1640*points_per_freq):int(1740*points_per_freq)
-       ] = vowel_triang_window(yf, 1640, 1740, er_vowel, points_per_freq)
-    # a vowel frequencies
-    yf[int(680*points_per_freq):int(780*points_per_freq)
-       ] = vowel_triang_window(yf, 680, 780, a_vowel, points_per_freq)
-    yf[int(1040*points_per_freq):int(1140*points_per_freq)
-       ] = vowel_triang_window(yf, 1040, 1140, a_vowel, points_per_freq)
-    yf[int(2390*points_per_freq):int(2490*points_per_freq)
-       ] = vowel_triang_window(yf, 2390, 2490, a_vowel, points_per_freq)
-    # iy vowel frequencies
-    yf[int(220*points_per_freq):int(320*points_per_freq)
-       ] = vowel_triang_window(yf, 220, 320, iy_vowel, points_per_freq)
-    yf[int(2240*points_per_freq):int(2340*points_per_freq)
-       ] = vowel_triang_window(yf, 2240, 2340, iy_vowel, points_per_freq)
-    yf[int(2960*points_per_freq):int(3060*points_per_freq)
-       ] = vowel_triang_window(yf, 2960, 3060, iy_vowel, points_per_freq)
-    # oo vowel frequencies
-    yf[int(250*points_per_freq):int(350*points_per_freq)
-       ] = vowel_triang_window(yf, 250, 350, oo_vowel, points_per_freq)
-    yf[int(820*points_per_freq):int(920*points_per_freq)
-       ] = vowel_triang_window(yf, 820, 920, oo_vowel, points_per_freq)
-    yf[int(2360*points_per_freq):int(2460*points_per_freq)
-       ] = vowel_triang_window(yf, 2360, 2460, oo_vowel, points_per_freq)
-    # uh vowel frequencies
-    yf[int(470*points_per_freq):int(570*points_per_freq)
-       ] = vowel_triang_window(yf, 470, 570, uh_vowel, points_per_freq)
-    yf[int(1140*points_per_freq):int(1240*points_per_freq)
-       ] = vowel_triang_window(yf, 1140, 1240, uh_vowel, points_per_freq)
-    yf[int(2340*points_per_freq):int(2440*points_per_freq)
-       ] = vowel_triang_window(yf, 2340, 2440, uh_vowel, points_per_freq)
+
+
+    yf[int(800*points_per_freq):int(5000*points_per_freq)]*=ʃ_slider
+    yf[int(500*points_per_freq):int(2000*points_per_freq)]*=ʊ_slider
+    yf[int(500*points_per_freq):int(1200*points_per_freq)]*=a_slider
+    yf[int(900*points_per_freq):int(5000*points_per_freq)]*=r_slider
+    yf[int(1200*points_per_freq):int(5000*points_per_freq)]*=b_slider
+
+    
+
 
     modified_signal = irfft(yf)
 
     sf.write("vowel_modified.wav", modified_signal, sample_rate)
-
     with column2:
         st.audio("vowel_modified.wav", format='audio/wav')
-        if spectroCheckBox:
-            plot_spectro("vowel_modified.wav")
 
-
-
-
-
-
+    if spectroCheckBox:
+        with column2:
+            plot_spectro('vowel_modified.wav')
+    else:
+        dynamicPlotly(signal_x_axis,signal_y_axis,modified_signal)
 
 #-------------------------------------------------------------------------- PITCH MODIFIER FUNCTION ---------------------------------------------------------------------------------------
 

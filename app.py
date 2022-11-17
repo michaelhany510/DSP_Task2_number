@@ -112,24 +112,35 @@ def body():
                 fn.audio_fourier_transform(
                     file, guitar, flute, piano, spectroCheckBox)
     elif option == "Vowels":
-        with st.sidebar:
-            col1, col2 = st.columns(2)
-            with col1:
-                er_vowel = st.slider("/er/", min_value=0,
-                                     max_value=10, value=1)
-                a_vowel = st.slider("/a/", min_value=0, max_value=10, value=1)
-
-            with col2:
-                iy_vowel = st.slider("/iy/", min_value=0,
-                                   max_value=10, value=1)
-                oo_vowel = st.slider("/oo/", min_value=0,
-                                   max_value=10, value=1)
-
-            uh_vowel = st.slider("/uh/", min_value=0, max_value=10, value=1)
-            spectroCheckBox = st.checkbox('Show spectrogram')
+        
         if file is not None:
-            fn.vowel_audio_fourier_transform(
-                file, er_vowel, a_vowel, iy_vowel, oo_vowel, uh_vowel, spectroCheckBox)
+
+            with st.container():
+                with st.sidebar:
+                
+                    spectroCheckBox = st.checkbox('Show spectrogram')
+            
+                col1, col2,col3,col4,col5 = st.columns(5)
+                with col1:
+                    ʃ_slider = fn.vertical_slider("/ʃ/",1,1, 0, 10,4 )
+                with col2:
+                    ʊ_slider = fn.vertical_slider("/ʊ/",1,1, 0, 10,5 )
+                with col3:   
+                    a_slider = fn.vertical_slider("/a/",1,1, 0, 10,6 )
+                with col4:   
+                    r_slider = fn.vertical_slider("/r/",1,1, 0, 10,8 )
+                with col5:   
+                    b_slider = fn.vertical_slider("/b/",1,1, 0, 10,9 )
+                with graph_container:
+            
+                    fn.vowel_audio_fourier_transform(
+                    file, ʃ_slider, ʊ_slider, a_slider, r_slider, b_slider, spectroCheckBox)
+                
+            
+            
+
+
+ 
     elif option == "Medical":
         with st.sidebar:
             col1, col2 = st.columns(2)

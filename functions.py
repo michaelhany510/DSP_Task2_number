@@ -28,6 +28,7 @@ import os
 import streamlit.components.v1 as components
 
 
+
 parent_dir = os.path.dirname(os.path.abspath(__file__))
 build_dir = os.path.join(parent_dir, "build")
 _vertical_slider = components.declare_component("vertical_slider", path=build_dir)
@@ -67,8 +68,9 @@ def plot_animation(df):
             brush
         ).interactive()
     
-    figure = chart1.encode(y=alt.Y('amplitude',axis=alt.Axis(title='Amplitude'))) | chart1.encode(y ='amplitude after processing').add_selection(
-            brush)
+    figure = alt.hconcat( chart1.encode(y=alt.Y('amplitude',axis=alt.Axis(title='Amplitude'))) , chart1.encode(y ='amplitude after processing').add_selection(
+            brush),spacing =240)
+    # figure.CompositionConfig(spacing = 100)
     return figure
 
 
@@ -151,43 +153,20 @@ def audio_fourier_transform(audio_file, guitar, flute, piano, spectroCheckBox):
     with column2:
         st.audio("example.wav", format='audio/wav')
     
-    start = st.button('start')
-    pause = st.button('pause')
-    resume = st.button('resume')
-    
-    Dynamic_graph(signal_x_axis,signal_y_axis,tryyy,start,pause,resume)
-    # placeHolder = st.empty()
-    # if not spectroCheckBox:
-    #     if not st.session_state['played']:
-    #         with placeHolder.container():
-    #             plotting(signal_x_axis,signal_y_axis,signal_x_axis, tryyy)
-    # else:
-    #     with column2:
-    #         plot_spectro("example.wav")
-    # # with column2:
-    # #     plotting(xf,np.abs(yf))
-
-    # pause = st.button('pause')
-    # if st.button('play'):
-    #     while True:
-    #         st.session_state['played'] = True   
-    #         for i in range(st.session_state['stopPoint'],len(signal_x_axis),len(signal_x_axis)//10//5):
-    #             st.session_state['stopPoint'] = i
-    #             mn = max(0,i-(len(signal_x_axis)//10))
-    #             st.session_state['startPoint'] = mn
-    #             with placeHolder.container(): 
-    #                 plotting(signal_x_axis[mn:i],signal_y_axis[mn:i],signal_x_axis[mn:i], tryyy[mn:i])
-    #             time.sleep(0.08)
-    #         st.session_state['stopPoint'] = 0
-    # stop = st.session_state['stopPoint']
-    # start = st.session_state['startPoint']
-    # if st.session_state['played']:
-    #     with placeHolder.container():
-    #         plotting(signal_x_axis[start:stop],signal_y_axis[start:stop],signal_x_axis[start:stop], tryyy[start:stop])
-    
-    
-   
-    # st.write(st.session_state['stopPoint'])
+    if not spectroCheckBox:
+        with st.sidebar:
+            c1,c2,c3 = st.columns(3)
+            with c1:
+                start = st.button('start')
+            with c2:
+                pause = st.button('pause')
+            with c3:
+                resume = st.button('resume')
+    if spectroCheckBox:
+        with column2:
+            plot_spectro('example.wav')
+    else:
+        Dynamic_graph(signal_x_axis,signal_y_axis,tryyy,start,pause,resume)
 
 
 def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, comp_5, comp_6, comp_7, comp_8, comp_9, comp_10, spectroCheckBox):

@@ -25,7 +25,7 @@ build_dir = os.path.join(parent_dir, "build")
 _vertical_slider = components.declare_component("vertical_slider", path=build_dir)
 
 def vertical_slider(label ,value, step, min=min, max=max, key=None):
-    st.markdown(f"<h4 style='text-align: center; color: black; '>{label}</h4>", unsafe_allow_html=True)
+    st.markdown(f"<h6 style='text-align: center; color: black; '>{label}</h6>", unsafe_allow_html=True)
     slider_value = _vertical_slider(value=value,step=step, min=min, max=max, key=key, default=value)
     return slider_value
 
@@ -269,16 +269,25 @@ def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, 
         st.audio("example.wav", format='audio/wav')
 
     
-    if not spectroCheckBox:
-        dynamic_plotly(signal_x_axis,signal_y_axis,y_normalized,spectroCheckBox)
+    # if not spectroCheckBox:
+    #     dynamic_plotly(signal_x_axis,signal_y_axis,y_normalized,spectroCheckBox)
         
-    else:
-        with column1:
-            plot_spectro(audio_file.name)
-        with column2:
+    # else:
+    #     with column1:
+    #         plot_spectro(audio_file.name)
+    #     with column2:
             
+    #         plot_spectro("example.wav")
+    if not spectroCheckBox:
+        
+        start = st.button('start')
+        pause = st.button('pause')
+        resume = st.button('resume')
+        
+        Dynamic_graph(signal_x_axis,signal_y_axis,y_normalized,start,pause,resume)
+    else:
+        with column2:
             plot_spectro("example.wav")
-   
 
 
 

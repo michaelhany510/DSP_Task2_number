@@ -37,7 +37,7 @@ def head():
 
     st.caption("""
             <p style='text-align: center; position: relative; margin-top:-25px;'>
-            by team x
+            by team 9
             </p>
         """, unsafe_allow_html=True
                )

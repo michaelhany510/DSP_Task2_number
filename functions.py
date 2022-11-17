@@ -19,6 +19,7 @@ import time
 import os
 import streamlit.components.v1 as components
 
+uniformModeRanges = [(20,2000),(2000,4000),(4000,6000),(6000,8000),(8000,10000),(10000,12000),(12000,14000),(14000,16000),(16000,18000),(18000,20000)]
 
 
 parent_dir = os.path.dirname(os.path.abspath(__file__))
@@ -84,7 +85,7 @@ def audio_fourier_transform(audio_file, guitar, flute, piano, spectroCheckBox):
 # ---------------------------------------------------------------------- UNIFORM FOURIER TRANSFORM ON AUDIO -----------------------------------------------------------------------
 
 
-def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, comp_5, comp_6, comp_7, comp_8, comp_9, comp_10, spectroCheckBox):
+def uniform_audio_fourier_transform(audio_file, uniformModeSliders, spectroCheckBox):
     """
     Deletes or multiples a range of frequencies(20 Hz-20 kHz) from an audio file
     Arguments:
@@ -121,18 +122,11 @@ def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, 
    
 
     # these 10 lines determine the range that will be modified by the slider
-    yf[int(20*points_per_freq):int(2000*points_per_freq)] *= comp_1
-    yf[int(2000*points_per_freq):int(4000*points_per_freq)] *= comp_2
-    yf[int(4000*points_per_freq):int(6000*points_per_freq)] *= comp_3
-    yf[int(6000*points_per_freq):int(8000*points_per_freq)] *= comp_4
-    yf[int(8000*points_per_freq):int(10000*points_per_freq)] *= comp_5
-    yf[int(10000*points_per_freq):int(12000*points_per_freq)] *= comp_6
-    yf[int(12000*points_per_freq):int(14000*points_per_freq)] *= comp_7
-    yf[int(14000*points_per_freq):int(16000*points_per_freq)] *= comp_8
-    yf[int(16000*points_per_freq):int(18000*points_per_freq)] *= comp_9
-    yf[int(18000*points_per_freq):int(20000*points_per_freq)] *= comp_10
-
-
+    i = 0
+    for range in uniformModeRanges:
+        yf[int(range[0]*points_per_freq):int(range[1]*points_per_freq)] *= uniformModeSliders[i]
+        i += 1
+        
     # returning the inverse transform after modifying it with sliders
     modified_signal = irfft(yf)
     y_normalized = np.int32(modified_signal)
@@ -144,28 +138,14 @@ def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, 
         st.audio("example.wav", format='audio/wav')
 
     
-    # if not spectroCheckBox:
-    #     dynamic_plotly(signal_x_axis,signal_y_axis,y_normalized,spectroCheckBox)
-        
-    # else:
-    #     with column1:
-    #         plot_spectro(audio_file.name)
-    #     with column2:
-            
-    #         plot_spectro("example.wav")
     if not spectroCheckBox:
-        
-        start = st.button('start')
-        pause = st.button('pause')
-        resume = st.button('resume')
-        
         dynamicPlotly(signal_x_axis,signal_y_axis,y_normalized)
     else:
+        with column1:
+            plot_spectro(audio_file.name)
         with column2:
+            
             plot_spectro("example.wav")
-
-
-
 
 #---------------------------------------------------------------------- VOWEL REMOVER/MODIFIER FUNCTION -------------------------------------------------------------------
 

@@ -100,12 +100,13 @@ def body():
         
         spectroCheckBox = st.sidebar.checkbox('Show spectrogram')
         if file is not None:
-            with col1:
-                guitar = fn.vertical_slider("Guitar",1,1, 0, 10, 1)
-            with col2:
-                piano = fn.vertical_slider("Piano",1,1, 0, 10, 2)
-            with col3:
-                flute = fn.vertical_slider("Fluet",1,1, 0, 10, 3)
+            with st.container():
+                with col1:
+                    guitar = fn.vertical_slider("Guitar",1,1, 0, 10, 1)
+                with col2:
+                    piano = fn.vertical_slider("Piano",1,1, 0, 10, 2)
+                with col3:
+                    flute = fn.vertical_slider("Flute",1,1, 0, 10, 3)
 
             with graph_container:
                 fn.audio_fourier_transform(

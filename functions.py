@@ -58,12 +58,21 @@ def plot_animation(df):
     return figure
 
 
-def Dynamic_graph(signal_x_axis, signal_y_axis, signal_y_axis1,start_btn,pause_btn,resume_btn):
+def Dynamic_graph(signal_x_axis, signal_y_axis, signal_y_axis1):
         df = pd.DataFrame({'time': signal_x_axis[::200], 'amplitude': signal_y_axis[:: 200], 'amplitude after processing': signal_y_axis1[::200]}, columns=['time', 'amplitude','amplitude after processing'])
 
         lines = plot_animation(df)
         line_plot = st.altair_chart(lines)
 
+        with st.sidebar:
+            c1,c2,c3 = st.columns(3)
+            with c1:
+                start_btn = st.button('start')
+            with c2:
+                pause_btn = st.button('pause')
+            with c3:
+                resume_btn = st.button('resume')
+        
         N = df.shape[0]  # number of elements in the dataframe
         burst = 10       # number of elements  to add to the plot
         size = burst     # size of the current dataset
@@ -91,8 +100,39 @@ def Dynamic_graph(signal_x_axis, signal_y_axis, signal_y_axis1,start_btn,pause_b
             lines = plot_animation(step_df)
             line_plot = line_plot.altair_chart(lines)
 
+def dynamicPlotly(signalX,signalYBefore,signalYAfter):
+    with st.sidebar:
+        c1,c2 = st.columns(2)
+        with c1:
+            playButton = st.button('play')
+        with c2:
+            pauseButton = st.button('pause')
+        
+    
+    placeHolder = st.empty()
+    if not st.session_state['played']:
+        with placeHolder.container():
+            plotting(signalX,signalYBefore,signalX, signalYAfter)
+    
+    
+    if playButton:
+        while True:
+            st.session_state['played'] = True   
+            for i in range(st.session_state['stopPoint'],len(signalX),100):
+                st.session_state['stopPoint'] = i
+                mn = max(0,i-(len(signalX)//50))
+                st.session_state['startPoint'] = mn
+                with placeHolder.container(): 
+                    plotting(signalX[mn:i],signalYBefore[mn:i],signalX[mn:i], signalYAfter[mn:i])
+                time.sleep(0.3)
+            st.session_state['stopPoint'] = 0
+    stop = st.session_state['stopPoint']
+    start = st.session_state['startPoint']
+    if st.session_state['played']:
+        with placeHolder.container():
+            plotting(signalX[start:stop],signalYBefore[start:stop],signalX[start:stop], signalYAfter[start:stop])
+
 def dynamic_plotly(signal_x_axis,signal_y_axis,y_normalized,spectroCheckBox):
-    column1, column2 = st.columns(2)
     placeHolder = st.empty()
     if not spectroCheckBox:
         if not st.session_state['played']:
@@ -111,7 +151,7 @@ def dynamic_plotly(signal_x_axis,signal_y_axis,y_normalized,spectroCheckBox):
             with placeHolder.container():
                 plotting(signal_x_axis[:i], signal_y_axis[:i],
                          signal_x_axis[:i], y_normalized[:i])
-                time.sleep(0.2)
+                time.sleep(0.7)
     stop = st.session_state['stopPoint']
     if st.session_state['played']:
         with placeHolder.container():
@@ -135,10 +175,7 @@ def audio_fourier_transform(audio_file, guitar, flute, piano, spectroCheckBox):
     signal_y_axis = np.frombuffer(signal_wave, dtype=np.int32)
     signal_x_axis = np.linspace(0, duration, len(signal_y_axis))
     with column1:
-        if not spectroCheckBox:
-            pass
-            # plotting(signal_x_axis[:1000], signal_y_axis[:1000])
-        else:
+        if spectroCheckBox:
             plot_spectro(audio_file.name)
 
     # returns complex numbers of the y axis in the data frame
@@ -165,21 +202,12 @@ def audio_fourier_transform(audio_file, guitar, flute, piano, spectroCheckBox):
     write("example.wav", sample_rate, tryyy)
     with column2:
         st.audio("example.wav", format='audio/wav')
-    
-    if not spectroCheckBox:
-        with st.sidebar:
-            c1,c2,c3 = st.columns(3)
-            with c1:
-                start = st.button('start')
-            with c2:
-                pause = st.button('pause')
-            with c3:
-                resume = st.button('resume')
+
     if spectroCheckBox:
         with column2:
             plot_spectro('example.wav')
     else:
-        Dynamic_graph(signal_x_axis,signal_y_axis,tryyy,start,pause,resume)
+        dynamicPlotly(signal_x_axis,signal_y_axis,tryyy)
 
 
 
@@ -412,7 +440,15 @@ def plotting(x1, y1, x2, y2):
                      name="transformed"), row=1, col=2)
 
     figure.update_xaxes(matches='x')
-
+    figure.update_layout(autosize=False,
+    width=500,
+    height=700,
+    margin=dict(
+        l=0,
+        r=0,
+        b=0,
+        t=0,
+        pad=4))
     st.plotly_chart(figure, use_container_width=True)
 
 

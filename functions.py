@@ -30,135 +30,6 @@ def vertical_slider(label ,value, step, min=min, max=max, key=None):
     slider_value = _vertical_slider(value=value,step=step, min=min, max=max, key=key, default=value)
     return slider_value
 
-
-
-
-
-class variabls:
-    points_num=1000
-    start=0
-    vowel_freq_ae=[860,2850]
-    vowel_freq_a=[850,2800]
-    slider_tuple=(vowel_freq_ae,vowel_freq_a)
-
-def plot_animation(df):
-    brush  = alt.selection_interval ()
-    chart1 = alt.Chart(df).mark_line().encode(
-            x=alt.X('time', axis=alt.Axis(title='Time')),
-        ).properties(
-            width=414,
-            height=250
-        ).add_selection(
-            brush
-        ).interactive()
-    
-    figure = alt.hconcat( chart1.encode(y=alt.Y('amplitude',axis=alt.Axis(title='Amplitude'))) , chart1.encode(y ='amplitude after processing').add_selection(
-            brush),spacing =240)
-    # figure.CompositionConfig(spacing = 100)
-    return figure
-
-
-def Dynamic_graph(signal_x_axis, signal_y_axis, signal_y_axis1):
-        df = pd.DataFrame({'time': signal_x_axis[::200], 'amplitude': signal_y_axis[:: 200], 'amplitude after processing': signal_y_axis1[::200]}, columns=['time', 'amplitude','amplitude after processing'])
-
-        lines = plot_animation(df)
-        line_plot = st.altair_chart(lines)
-
-        with st.sidebar:
-            c1,c2,c3 = st.columns(3)
-            with c1:
-                start_btn = st.button('start')
-            with c2:
-                pause_btn = st.button('pause')
-            with c3:
-                resume_btn = st.button('resume')
-        
-        N = df.shape[0]  # number of elements in the dataframe
-        burst = 10       # number of elements  to add to the plot
-        size = burst     # size of the current dataset
-
-        if start_btn:
-            for i in range(1, N):
-                variabls.start=i
-                step_df = df.iloc[0:size]
-                lines = plot_animation(step_df)
-                line_plot = line_plot.altair_chart(lines)
-                variabls.graph_size=size
-                size = i * burst 
-
-        if resume_btn: 
-            for i in range( variabls.start,N):
-                variabls.start=i
-                step_df     = df.iloc[0:size]
-                lines       = plot_animation(step_df)
-                line_plot   = line_plot.altair_chart(lines)
-                variabls.graph_size=size
-                size = i * burst
-
-        if pause_btn:
-            step_df = df.iloc[0:variabls.graph_size]
-            lines = plot_animation(step_df)
-            line_plot = line_plot.altair_chart(lines)
-
-def dynamicPlotly(signalX,signalYBefore,signalYAfter):
-    with st.sidebar:
-        c1,c2 = st.columns(2)
-        with c1:
-            playButton = st.button('play')
-        with c2:
-            pauseButton = st.button('pause')
-        
-    
-    placeHolder = st.empty()
-    if not st.session_state['played']:
-        with placeHolder.container():
-            plotting(signalX,signalYBefore,signalX, signalYAfter)
-    
-    
-    if playButton:
-        while True:
-            st.session_state['played'] = True   
-            for i in range(st.session_state['stopPoint'],len(signalX),100):
-                st.session_state['stopPoint'] = i
-                mn = max(0,i-(len(signalX)//50))
-                st.session_state['startPoint'] = mn
-                with placeHolder.container(): 
-                    plotting(signalX[mn:i],signalYBefore[mn:i],signalX[mn:i], signalYAfter[mn:i])
-                time.sleep(0.3)
-            st.session_state['stopPoint'] = 0
-    stop = st.session_state['stopPoint']
-    start = st.session_state['startPoint']
-    if st.session_state['played']:
-        with placeHolder.container():
-            plotting(signalX[start:stop],signalYBefore[start:stop],signalX[start:stop], signalYAfter[start:stop])
-
-def dynamic_plotly(signal_x_axis,signal_y_axis,y_normalized,spectroCheckBox):
-    placeHolder = st.empty()
-    if not spectroCheckBox:
-        if not st.session_state['played']:
-            with placeHolder.container():
-                plotting(
-                    signal_x_axis[:1000], signal_y_axis[:1000], signal_x_axis[:1000], y_normalized[:1000])
-    
-    # with column2:
-    #     plotting(xf,np.abs(yf))
-
-    pause = st.button('pause')
-    if st.button('play'):
-        st.session_state['played'] = True
-        for i in range(st.session_state['stopPoint'], 50):
-            st.session_state['stopPoint'] = i
-            with placeHolder.container():
-                plotting(signal_x_axis[:i], signal_y_axis[:i],
-                         signal_x_axis[:i], y_normalized[:i])
-                time.sleep(0.7)
-    stop = st.session_state['stopPoint']
-    if st.session_state['played']:
-        with placeHolder.container():
-            plotting(signal_x_axis[:stop], signal_y_axis[:stop],
-                     signal_x_axis[:stop], y_normalized[:stop])
-
-
 # ---------------------------------------------------------------------- FOURIER TRANSFORM ON AUDIO -----------------------------------------------------------------------
 
 
@@ -208,9 +79,6 @@ def audio_fourier_transform(audio_file, guitar, flute, piano, spectroCheckBox):
             plot_spectro('example.wav')
     else:
         dynamicPlotly(signal_x_axis,signal_y_axis,tryyy)
-
-
-
 
 
 # ---------------------------------------------------------------------- UNIFORM FOURIER TRANSFORM ON AUDIO -----------------------------------------------------------------------
@@ -291,7 +159,7 @@ def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, 
         pause = st.button('pause')
         resume = st.button('resume')
         
-        Dynamic_graph(signal_x_axis,signal_y_axis,y_normalized,start,pause,resume)
+        dynamicPlotly(signal_x_axis,signal_y_axis,y_normalized)
     else:
         with column2:
             plot_spectro("example.wav")
@@ -300,6 +168,7 @@ def uniform_audio_fourier_transform(audio_file, comp_1, comp_2, comp_3, comp_4, 
 
 
 #---------------------------------------------------------------------- VOWEL REMOVER/MODIFIER FUNCTION -------------------------------------------------------------------
+
 
 
 def vowel_triang_window(y, start, end, val, ppf):
@@ -428,7 +297,7 @@ def pitch_modifier(audio_file, semitone, spectroCheckBox):
         st.audio("example.wav", format='audio/wav')
 
     # play/pause with plotly
-    dynamic_plotly(signal_x_axis,signal_y_axis,y_normalized,spectroCheckBox)
+    dynamicPlotly(signal_x_axis,signal_y_axis,y_normalized)
    
 
 
@@ -436,6 +305,38 @@ def pitch_modifier(audio_file, semitone, spectroCheckBox):
 
 
 ############################################################################ PLOTTING FUNCTIONS ######################################################################################
+
+def dynamicPlotly(signalX,signalYBefore,signalYAfter):
+    with st.sidebar:
+        c1,c2 = st.columns(2)
+        with c1:
+            playButton = st.button('play')
+        with c2:
+            pauseButton = st.button('pause')
+        
+    
+    placeHolder = st.empty()
+    if not st.session_state['played']:
+        with placeHolder.container():
+            plotting(signalX,signalYBefore,signalX, signalYAfter)
+    
+    
+    if playButton:
+        while True:
+            st.session_state['played'] = True   
+            for i in range(st.session_state['stopPoint'],len(signalX),100):
+                st.session_state['stopPoint'] = i
+                mn = max(0,i-(len(signalX)//100))
+                st.session_state['startPoint'] = mn
+                with placeHolder.container(): 
+                    plotting(signalX[mn:i],signalYBefore[mn:i],signalX[mn:i], signalYAfter[mn:i])
+                time.sleep(0.2)
+            st.session_state['stopPoint'] = 0
+    stop = st.session_state['stopPoint']
+    start = st.session_state['startPoint']
+    if st.session_state['played']:
+        with placeHolder.container():
+            plotting(signalX[start:stop],signalYBefore[start:stop],signalX[start:stop], signalYAfter[start:stop])
 
 
 def plotting(x1, y1, x2, y2):

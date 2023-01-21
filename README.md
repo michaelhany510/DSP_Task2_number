@@ -13,6 +13,8 @@
  - **HTML**
  - **CSS**
  ### Used libraries
+ - sounfile
+ - wave.io
  - numpy
  - flask
  - PIL

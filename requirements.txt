@@ -1,0 +1,10 @@
+altair
+librosa
+matplotlib
+numpy
+pandas
+plotly
+scipy
+soundfile
+streamlit
+wave
